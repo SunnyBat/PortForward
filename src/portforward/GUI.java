@@ -49,6 +49,7 @@ public class GUI extends javax.swing.JFrame {
     } catch (IOException iOException) {
       iOException.printStackTrace();
     }
+    ((javax.swing.JSpinner.NumberEditor) jSpinner1.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
   }
 
   public void minimizeWindow() {
@@ -122,10 +123,37 @@ public class GUI extends javax.swing.JFrame {
     pack();
   }
 
+  public void checkCheckboxes() {
+    if (!JCBTCP.isSelected() && !JCBUDP.isSelected()) {
+      jButton1.setEnabled(false);
+      return;
+    }
+    Iterator<PortPanel> it = portPanelList.iterator();
+    while (it.hasNext()) {
+      PortPanel panel = it.next();
+      if (!panel.checkBoxesValid()) {
+        jButton1.setEnabled(false);
+        return;
+      }
+    }
+    jButton1.setEnabled(true);
+  }
+
+  public void setPortOptionsEnabled(boolean enable) {
+    JCBTCP.setEnabled(enable);
+    JCBUDP.setEnabled(enable);
+    jSpinner1.setEnabled(enable);
+    jButton2.setEnabled(enable);
+    Iterator<PortPanel> it = portPanelList.iterator();
+    while (it.hasNext()) {
+      it.next().setPortOptionsEnabled(enable);
+    }
+  }
+
   public static int[] parsePanels(List<PortPanel> list) {
     Iterator<PortPanel> it = list.iterator();
     int place = 0;
-    int[] tempArray = new int[list.size()*3];
+    int[] tempArray = new int[list.size() * 3];
     while (it.hasNext()) {
       PortPanel panel = it.next();
       tempArray[place++] = (int) panel.jSpinner1.getValue();
@@ -277,20 +305,12 @@ public class GUI extends javax.swing.JFrame {
 
   private void JCBTCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JCBTCPActionPerformed
     // TODO add your handling code here:
-    if (!JCBTCP.isSelected() && !JCBUDP.isSelected()) {
-      jButton1.setEnabled(false);
-    } else {
-      jButton1.setEnabled(true);
-    }
+    checkCheckboxes();
   }//GEN-LAST:event_JCBTCPActionPerformed
 
   private void JCBUDPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JCBUDPActionPerformed
     // TODO add your handling code here:
-    if (!JCBTCP.isSelected() && !JCBUDP.isSelected()) {
-      jButton1.setEnabled(false);
-    } else {
-      jButton1.setEnabled(true);
-    }
+    checkCheckboxes();
   }//GEN-LAST:event_JCBUDPActionPerformed
 
   private void formWindowIconified(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowIconified

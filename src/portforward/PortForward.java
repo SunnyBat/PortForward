@@ -74,6 +74,7 @@ public class PortForward {
     useTCP = tcp;
     useUDP = udp;
     portOpen = port;
+    myGUI.setPortOptionsEnabled(false);
     PortForward.startNewThread(new Runnable() {
       @Override
       public void run() {
@@ -91,6 +92,7 @@ public class PortForward {
   public static boolean openPorts(final int[] list) {
     System.out.println("~~~~~~~~~~~~~~~~~openPorts(int[]) called!");
     if (threadCreated) {
+      System.out.println("Thread already created!");
       return false;
     }
     if (isPortOpen()) {
@@ -98,6 +100,7 @@ public class PortForward {
       return false;
     }
     portOpen = 1;
+    myGUI.setPortOptionsEnabled(false);
     PortForward.startNewThread(new Runnable() {
       @Override
       public void run() {
@@ -113,10 +116,13 @@ public class PortForward {
   }
 
   private static void UPnPFinished(String message) {
-    setGUIPortStatusText(message);
+    if (message != null) {
+      setGUIPortStatusText(message);
+    }
     myGUI.setButtonEnabled(true);
     myGUI.callButtonAction();
     myGUI.maximizeWindow();
+    myGUI.setPortOptionsEnabled(true);
     closePort();
     threadCreated = false;
   }
@@ -237,7 +243,7 @@ public class PortForward {
           println("Unable to remove port mapping :(");
           setGUIPortStatusText("Unable to remove port " + portToUse + " (UDP) mapping :(");
         }
-        threadCreated = false;
+        UPnPFinished(null);
 //        if (myGUI.isDisplayable()) {
 //          myGUI.maximizeWindow();
 //        }
@@ -313,8 +319,8 @@ public class PortForward {
     // enableUPnP static lease duration mapping
     int success = 0;
     for (int a = 0; a < list.length; a += 3) {
-      if ((list[a+1] == 0 || activeGW.addPortMapping(list[a], list[a], localAddress.getHostAddress(), "TCP", "ShowclixScanner UPnP TCP"))
-          && (list[a+2] == 0 || activeGW.addPortMapping(list[a], list[a], localAddress.getHostAddress(), "UDP", "ShowclixScanner UPnP UDP"))) {
+      if ((list[a + 1] == 0 || activeGW.addPortMapping(list[a], list[a], localAddress.getHostAddress(), "TCP", "ShowclixScanner UPnP TCP"))
+          && (list[a + 2] == 0 || activeGW.addPortMapping(list[a], list[a], localAddress.getHostAddress(), "UDP", "ShowclixScanner UPnP UDP"))) {
         System.out.println("Port " + list[a] + " mapped!");
         success++;
       }
@@ -328,26 +334,24 @@ public class PortForward {
         Thread.sleep(100);
       }
       for (int a = 0; a < list.length; a += 3) {
-        if (list[a+1] == 1 && activeGW.deletePortMapping(list[a], "TCP")) {
+        if (list[a + 1] == 1 && activeGW.deletePortMapping(list[a], "TCP")) {
           println("Removed port mapping (TCP).");
-          setGUIPortStatusText("Port " + list[a] + " (TCP) closed");
-        } else if (list[a+1] == 0) {
+        } else if (list[a + 1] == 0) {
           System.out.println("!useTCP");
         } else {
           println("Unable to remove port mapping :(");
           setGUIPortStatusText("Unable to remove port " + list[a] + " (TCP) mapping :(");
         }
-        if (list[a+2] == 1 && activeGW.deletePortMapping(list[a], "UDP")) {
+        if (list[a + 2] == 1 && activeGW.deletePortMapping(list[a], "UDP")) {
           println("Removed port mapping (UDP).");
-          setGUIPortStatusText("Port " + list[a] + " (UDP) closed");
-        } else if (list[a+2] == 0) {
+        } else if (list[a + 2] == 0) {
           System.out.println("!useUDP");
         } else {
           println("Unable to remove port mapping :(");
           setGUIPortStatusText("Unable to remove port " + list[a] + " (UDP) mapping :(");
         }
       }
-      threadCreated = false;
+      UPnPFinished("Finished closing ports.");
 //        if (myGUI.isDisplayable()) {
 //          myGUI.maximizeWindow();
 //        }

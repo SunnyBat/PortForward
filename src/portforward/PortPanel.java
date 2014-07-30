@@ -11,7 +11,7 @@ package portforward;
  */
 public class PortPanel extends javax.swing.JPanel {
 
-  private GUI myGUI;
+  private final GUI myGUI;
 
   /**
    * Creates new form PortPanel
@@ -21,6 +21,18 @@ public class PortPanel extends javax.swing.JPanel {
   public PortPanel(GUI gui) {
     initComponents();
     myGUI = gui;
+    ((javax.swing.JSpinner.NumberEditor) jSpinner1.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
+  }
+
+  public boolean checkBoxesValid() {
+    return JCBTCP.isSelected() || JCBUDP.isSelected();
+  }
+
+  public void setPortOptionsEnabled(boolean enable) {
+    JCBTCP.setEnabled(enable);
+    JCBUDP.setEnabled(enable);
+    jButton1.setEnabled(enable);
+    jSpinner1.setEnabled(enable);
   }
 
   /**
@@ -40,6 +52,7 @@ public class PortPanel extends javax.swing.JPanel {
     jLabel2.setText("Port to Portforward:");
 
     jSpinner1.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+    jSpinner1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     jSpinner1.setEditor(new javax.swing.JSpinner.NumberEditor(jSpinner1, "0"));
 
     JCBTCP.setSelected(true);
@@ -93,20 +106,12 @@ public class PortPanel extends javax.swing.JPanel {
 
   private void JCBTCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JCBTCPActionPerformed
     // TODO add your handling code here:
-    if (!JCBTCP.isSelected() && !JCBUDP.isSelected()) {
-      jButton1.setEnabled(false);
-    } else {
-      jButton1.setEnabled(true);
-    }
+    myGUI.checkCheckboxes();
   }//GEN-LAST:event_JCBTCPActionPerformed
 
   private void JCBUDPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JCBUDPActionPerformed
     // TODO add your handling code here:
-    if (!JCBTCP.isSelected() && !JCBUDP.isSelected()) {
-      jSpinner1.setEnabled(false);
-    } else {
-      jSpinner1.setEnabled(true);
-    }
+    myGUI.checkCheckboxes();
   }//GEN-LAST:event_JCBUDPActionPerformed
 
   private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
