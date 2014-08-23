@@ -33,7 +33,7 @@ public class IconMenu extends PopupMenu {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         PortForward.exitProgram();
         removeOpenPortButton();
-        addClosePortButton(0);
+        addClosePortButton();
       }
     });
     openWindow.addActionListener(new java.awt.event.ActionListener() {
@@ -55,12 +55,12 @@ public class IconMenu extends PopupMenu {
     add(closeProgram);
   }
 
-  public void addOpenPortButton(final int number) {
-    openPort.setLabel("Open Port " + number);
+  public void addOpenPortButton() {
+    openPort.setLabel("Open Ports");
     openPort.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        if (PortForward.openPort(number)) {
-          addClosePortButton(number);
+        if (UPnPManager.openPorts()) {
+          addClosePortButton();
         }
       }
     });
@@ -73,12 +73,12 @@ public class IconMenu extends PopupMenu {
     remove(openPort);
   }
 
-  public void addClosePortButton(final int number) {
-    closePort.setLabel("Close Port " + number);
+  public void addClosePortButton() {
+    closePort.setLabel("Close Ports");
     closePort.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        PortForward.closePort();
-        addOpenPortButton(number);
+        UPnPManager.closePorts();
+        addOpenPortButton();
       }
     });
     removeAll();

@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and openPorts the template in the editor.
  */
 package portforward;
 
@@ -55,10 +55,10 @@ public class GUI extends javax.swing.JFrame {
   public void minimizeWindow() {
     try {
       jSpinner1.commitEdit(); // Update the spinner value. If invalid, uses the last known valid value (keypresses don't update the last known value)
-      if (PortForward.isPortOpen()) {
-        menu.addClosePortButton((int) jSpinner1.getValue());
+      if (UPnPManager.isOpen()) {
+        menu.addClosePortButton();
       } else {
-        menu.addOpenPortButton((int) jSpinner1.getValue());
+        menu.addOpenPortButton();
       }
       tray.add(myIcon);
     } catch (Exception e) {
@@ -77,7 +77,7 @@ public class GUI extends javax.swing.JFrame {
 
   @Override
   public void dispose() {
-    PortForward.closePort();
+    UPnPManager.closePorts();
     tray.remove(myIcon);
     super.dispose();
   }
@@ -150,17 +150,13 @@ public class GUI extends javax.swing.JFrame {
     }
   }
 
-  public static int[] parsePanels(List<PortPanel> list) {
-    Iterator<PortPanel> it = list.iterator();
-    int place = 0;
-    int[] tempArray = new int[list.size() * 3];
+  public void addPortsToManager() {
+    UPnPManager.addPort((int) jSpinner1.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected());
+    Iterator<PortPanel> it = portPanelList.iterator();
     while (it.hasNext()) {
-      PortPanel panel = it.next();
-      tempArray[place++] = (int) panel.jSpinner1.getValue();
-      tempArray[place++] = panel.JCBTCP.isSelected() ? 1 : 0;
-      tempArray[place++] = panel.JCBUDP.isSelected() ? 1 : 0;
+      PortPanel pan = it.next();
+      UPnPManager.addPort((int) pan.jSpinner1.getValue(), pan.JCBTCP.isSelected(), pan.JCBUDP.isSelected());
     }
-    return tempArray;
   }
 
   /**
@@ -280,26 +276,15 @@ public class GUI extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    // TODO add your handling code here:
-    if (!PortForward.isPortOpen()) {
-      if (!portPanelList.isEmpty()) {
-        int[] temp = parsePanels(portPanelList);
-        int[] all = new int[temp.length + 3];
-        all[0] = (int) jSpinner1.getValue();
-        all[1] = JCBTCP.isSelected() ? 1 : 0;
-        all[2] = JCBUDP.isSelected() ? 1 : 0;
-        System.arraycopy(temp, 0, all, 3, temp.length);
-        if (PortForward.openPorts(all)) {
-          jButton1.setText("Close Port!");
-        }
-      } else {
-        if (PortForward.openPort((int) jSpinner1.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected())) {
-          jButton1.setText("Close Port!");
-        }
+    if (!UPnPManager.isOpen()) {
+      addPortsToManager();
+      if (UPnPManager.openPorts()) {
+        jButton1.setText("Close Port!");
       }
     } else {
       jButton1.setText("GO!");
-      PortForward.closePort();
+      System.out.println("ELSE");
+      UPnPManager.closePorts();
     }
   }//GEN-LAST:event_jButton1ActionPerformed
 
