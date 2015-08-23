@@ -1,13 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package portforward;
-
-import java.net.InetAddress;
-import java.util.Map;
-import org.bitlet.weupnp.*;
 
 /**
  *
@@ -16,10 +7,6 @@ import org.bitlet.weupnp.*;
 public class PortForward {
 
   private static GUI myGUI;
-  private static volatile int portOpen;
-  private static volatile boolean threadCreated;
-  private static volatile boolean useTCP = true;
-  private static volatile boolean useUDP = true;
 
   /**
    * @param args the command line arguments
@@ -48,7 +35,6 @@ public class PortForward {
       myGUI.maximizeWindow();
     }
     myGUI.setPortOptionsEnabled(true);
-    threadCreated = false;
   }
 
   public static void setGUIPortStatusText(String text) {
@@ -61,10 +47,6 @@ public class PortForward {
 
   public static void setPortOptionsEnabled(Boolean enabled) {
     myGUI.setPortOptionsEnabled(enabled);
-  }
-
-  public static void println(String line) {
-    System.out.println(line);
   }
 
   /**
