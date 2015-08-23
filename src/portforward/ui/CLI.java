@@ -15,10 +15,18 @@ public class CLI implements Interactor {
   private List<Port> portsToOpen = new ArrayList<>();
   private Scanner in = new Scanner(System.in);
   private String forwardIP;
+  private boolean isOpen;
+  private boolean release;
+
+  public CLI(String defaultIP) {
+    forwardIP = defaultIP;
+    System.out.println("Default IP address: " + forwardIP);
+    System.out.println();
+  }
 
   @Override
   public String getIPToForward() {
-    return null; // TODO: Return proper IP
+    return forwardIP;
   }
 
   @Override
@@ -28,7 +36,8 @@ public class CLI implements Interactor {
 
   @Override
   public void waitForAction() {
-    while (true) {
+    release = false;
+    while (!release) {
       String next = in.nextLine();
       parseCommand(next);
     }
@@ -37,38 +46,61 @@ public class CLI implements Interactor {
   private void parseCommand(String command) { // In case we need to recurse
     switch (command.toLowerCase()) {
       case "open":
-        if (portsToOpen.isEmpty()) {
-          System.out.println("You must specify ports to open before opening them!");
-        } else {
+        if (isOpen) {
+          System.out.println("Ports are currently open -- you cannot open them again!");
           return;
+        } else if (portsToOpen.isEmpty()) {
+          System.out.println("You must specify ports to open before opening them!");
+          return;
+        } else {
+          isOpen = true;
+          release();
         }
         break;
       case "close":
-        return;
+        if (!isOpen) {
+          System.out.println("You must open ports before you can close them!");
+        } else {
+          isOpen = false;
+          release();
+        }
+        break;
       case "addport":
-        System.out.print("Port number (1-65535)? ");
-        int port = promptForPortNumber();
-        System.out.print("Forward TCP (Y/N)? ");
-        boolean tcp = parseYesNo(in.nextLine(), true);
-        System.out.print("Forward UDP (Y/N)? ");
-        boolean udp = parseYesNo(in.nextLine(), true);
-        removePort(port);
-        portsToOpen.add(new Port(port, tcp, udp));
+        if (isOpen) {
+          System.out.println("You cannot add ports while ports are opened!");
+        } else {
+          System.out.print("Port number (1-65535)? ");
+          int port = promptForPortNumber();
+          System.out.print("Forward TCP (Y/N)? ");
+          boolean tcp = parseYesNo(in.nextLine(), true);
+          System.out.print("Forward UDP (Y/N)? ");
+          boolean udp = parseYesNo(in.nextLine(), true);
+          removePort(port);
+          portsToOpen.add(new Port(port, tcp, udp));
+        }
         break;
       case "removeport":
-        parseCommand("listports");
-        System.out.println();
-        System.out.println("Port number to remove (1-65535)? ");
-        int portNumber = promptForPortNumber();
-        removePort(portNumber);
+        if (isOpen) {
+          System.out.println("You cannot remove ports while ports are opened!");
+        } else {
+          parseCommand("listports");
+          System.out.println();
+          System.out.println("Port number to remove (1-65535)? ");
+          int portNumber = promptForPortNumber();
+          removePort(portNumber);
+        }
         break;
       case "clearports":
-        System.out.println("Confirm clear ports (Y/N): ");
-        if (parseYesNo(in.nextLine(), false)) {
-          portsToOpen.clear();
-          System.out.println("Removed all ports.");
+        if (isOpen) {
+          System.out.println("You cannot clear all ports while ports are opened!");
         } else {
-          System.out.println("Did not remove any ports.");
+          System.out.println("Confirm clear ports (Y/N): ");
+          if (parseYesNo(in.nextLine(), false)) {
+            portsToOpen.clear();
+            System.out.println("Removed all ports.");
+          } else {
+            System.out.println("Did not remove any ports.");
+          }
         }
         break;
       case "listports":
@@ -78,19 +110,24 @@ public class CLI implements Interactor {
         }
         break;
       case "setip":
-        System.out.println("IP address to forward to? ");
-        String ip = in.nextLine();
-        if (!ip.contains(".")) {
-          System.out.println("Please enter a valid IP address.");
-          parseCommand(command);
+        if (isOpen) {
+          System.out.println("You cannot set the IP to forward to while ports are opened!");
+        } else {
+          System.out.println("IP address to forward to? ");
+          String ip = in.nextLine();
+          if (!ip.contains(".")) {
+            System.out.println("Please enter a valid IP address.");
+            parseCommand(command);
+          }
+          forwardIP = ip;
         }
-        forwardIP = ip;
         break;
       case "listip":
         System.out.println("Forwarding To: " + forwardIP);
         break;
       case "exit":
         PortForward.exitProgram();
+        release();
         return;
       default:
         System.out.println("Unknown command!");
@@ -148,6 +185,13 @@ public class CLI implements Interactor {
       } else {
         return unknownReturn;
       }
+    }
+  }
+
+  private void release() {
+    release = true;
+    synchronized (this) {
+      this.notify();
     }
   }
 

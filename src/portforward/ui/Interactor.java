@@ -45,7 +45,7 @@ public interface Interactor {
   public void updateStatus(String notification);
 
   /**
-   * Waits for the user to tell the program to proceed with the next action.
+   * Waits for the user to tell the program to proceed with the next action. This will block until the user proceeds.
    */
   public void waitForAction();
 

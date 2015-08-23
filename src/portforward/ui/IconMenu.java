@@ -30,6 +30,9 @@ public class IconMenu extends PopupMenu {
     closeProgram.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         PortForward.exitProgram();
+        synchronized (myGUI) {
+          myGUI.notify();
+        }
       }
     });
     openWindow.addActionListener(new java.awt.event.ActionListener() {
@@ -75,5 +78,4 @@ public class IconMenu extends PopupMenu {
 //  public void removeClosePortButton() {
 //    remove(closePort);
 //  }
-
 }

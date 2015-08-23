@@ -22,10 +22,13 @@ public class GUI extends javax.swing.JFrame implements Interactor {
 
   /**
    * Creates new form GUI
+   *
+   * @param defaultIP The default IP address to forward to
    */
-  public GUI() {
+  public GUI(String defaultIP) {
     initComponents();
     customComponents();
+    JTFIPToForwardTo.setText(defaultIP);
   }
 
   private void customComponents() {
@@ -74,6 +77,9 @@ public class GUI extends javax.swing.JFrame implements Interactor {
     tray.remove(myIcon);
     super.dispose();
     PortForward.exitProgram();
+    synchronized (this) {
+      this.notify();
+    }
   }
 
   @Override
@@ -257,8 +263,6 @@ public class GUI extends javax.swing.JFrame implements Interactor {
     });
 
     jLabel3.setText("IP to Forward To:");
-
-    JTFIPToForwardTo.setEnabled(false);
 
     jLabel4.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
     jLabel4.setText("(Defaults to this computer)");

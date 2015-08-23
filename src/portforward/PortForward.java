@@ -1,5 +1,6 @@
 package portforward;
 
+import java.io.IOException;
 import portforward.ui.CLI;
 import portforward.ui.GUI;
 import portforward.ui.Interactor;
@@ -20,18 +21,19 @@ public class PortForward {
   public static void main(String[] args) {
     // TODO code application logic here
     if (args.length > 0 && args[0].equals("-cli")) {
-      myUI = new CLI();
+      myUI = new CLI(getInternalIP());
     } else {
-      myUI = new GUI();
+      myUI = new GUI(getInternalIP());
     }
     myManager = new UPnPManager(myUI);
-    while (true) {
+    while (!exit) {
       myUI.waitForAction();
       if (exit) {
         return;
       } else if (myManager.isOpen()) {
         myManager.closePorts();
       } else {
+        myManager.addPorts(myUI.getPortsToForward());
         myManager.openPorts(myUI.getIPToForward());
       }
     }
@@ -57,5 +59,18 @@ public class PortForward {
     Thread newThread = new Thread(run);
     newThread.setName(name);
     newThread.start(); // Start the Thread
+  }
+
+  /**
+   * Gets the internal IP address of the given machine.
+   *
+   * @return The visible IP address, or [Not Found] if unable to find it
+   */
+  private static String getInternalIP() {
+    try {
+      return java.net.Inet4Address.getLocalHost().getHostAddress();
+    } catch (IOException e) {
+      return "[Not Found]";
+    }
   }
 }
