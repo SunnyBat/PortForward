@@ -1,9 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package portforward;
+package portforward.ui;
+
+import portforward.Port;
 
 /**
  *
@@ -21,7 +18,7 @@ public class PortPanel extends javax.swing.JPanel {
   public PortPanel(GUI gui) {
     initComponents();
     myGUI = gui;
-    ((javax.swing.JSpinner.NumberEditor) jSpinner1.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
+    ((javax.swing.JSpinner.NumberEditor) JSPortNumber.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
   }
 
   public boolean checkBoxesValid() {
@@ -31,8 +28,12 @@ public class PortPanel extends javax.swing.JPanel {
   public void setPortOptionsEnabled(boolean enable) {
     JCBTCP.setEnabled(enable);
     JCBUDP.setEnabled(enable);
-    jButton1.setEnabled(enable);
-    jSpinner1.setEnabled(enable);
+    JBRemove.setEnabled(enable);
+    JSPortNumber.setEnabled(enable);
+  }
+
+  public Port getPort() {
+    return new Port((int) JSPortNumber.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected());
   }
 
   /**
@@ -44,16 +45,16 @@ public class PortPanel extends javax.swing.JPanel {
   private void initComponents() {
 
     jLabel2 = new javax.swing.JLabel();
-    jSpinner1 = new javax.swing.JSpinner();
+    JSPortNumber = new javax.swing.JSpinner();
     JCBTCP = new javax.swing.JCheckBox();
     JCBUDP = new javax.swing.JCheckBox();
-    jButton1 = new javax.swing.JButton();
+    JBRemove = new javax.swing.JButton();
 
     jLabel2.setText("Port to Portforward:");
 
-    jSpinner1.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
-    jSpinner1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    jSpinner1.setEditor(new javax.swing.JSpinner.NumberEditor(jSpinner1, "0"));
+    JSPortNumber.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+    JSPortNumber.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    JSPortNumber.setEditor(new javax.swing.JSpinner.NumberEditor(JSPortNumber, "0"));
 
     JCBTCP.setSelected(true);
     JCBTCP.setText("TCP");
@@ -71,10 +72,10 @@ public class PortPanel extends javax.swing.JPanel {
       }
     });
 
-    jButton1.setText("Remove Port");
-    jButton1.addActionListener(new java.awt.event.ActionListener() {
+    JBRemove.setText("Remove Port");
+    JBRemove.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        jButton1ActionPerformed(evt);
+        JBRemoveActionPerformed(evt);
       }
     });
 
@@ -85,46 +86,46 @@ public class PortPanel extends javax.swing.JPanel {
       .addGroup(layout.createSequentialGroup()
         .addComponent(jLabel2)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addComponent(JSPortNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(JCBTCP)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(JCBUDP)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(jButton1))
+        .addComponent(JBRemove))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
         .addComponent(jLabel2)
-        .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addComponent(JSPortNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addComponent(JCBTCP)
         .addComponent(JCBUDP)
-        .addComponent(jButton1))
+        .addComponent(JBRemove))
     );
   }// </editor-fold>//GEN-END:initComponents
 
   private void JCBTCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JCBTCPActionPerformed
     // TODO add your handling code here:
-    myGUI.checkCheckboxes();
+    myGUI.validateProgramSettings();
   }//GEN-LAST:event_JCBTCPActionPerformed
 
   private void JCBUDPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JCBUDPActionPerformed
     // TODO add your handling code here:
-    myGUI.checkCheckboxes();
+    myGUI.validateProgramSettings();
   }//GEN-LAST:event_JCBUDPActionPerformed
 
-  private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+  private void JBRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JBRemoveActionPerformed
     // TODO add your handling code here:
     myGUI.removePortPanel(this);
-  }//GEN-LAST:event_jButton1ActionPerformed
+  }//GEN-LAST:event_JBRemoveActionPerformed
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton JBRemove;
   public javax.swing.JCheckBox JCBTCP;
   public javax.swing.JCheckBox JCBUDP;
-  private javax.swing.JButton jButton1;
+  public javax.swing.JSpinner JSPortNumber;
   private javax.swing.JLabel jLabel2;
-  public javax.swing.JSpinner jSpinner1;
   // End of variables declaration//GEN-END:variables
 }

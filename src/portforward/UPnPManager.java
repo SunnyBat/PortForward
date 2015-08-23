@@ -1,10 +1,13 @@
 package portforward;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.bitlet.weupnp.GatewayDevice;
 import org.bitlet.weupnp.GatewayDiscover;
 import org.bitlet.weupnp.PortMappingEntry;
+import portforward.ui.Interactor;
 
 /**
  *
@@ -12,25 +15,88 @@ import org.bitlet.weupnp.PortMappingEntry;
  */
 public class UPnPManager {
 
-  private static final List<Port> portList = new ArrayList<>();
-  private static volatile boolean portsOpen;
-  private static volatile boolean closePorts;
-//  private final GatewayDevice activeGW;
-//
-//  public UPnPManager() throws Exception {
-//    activeGW = getGateway();
-//    checkCompatibility(activeGW);
-//  }
+  private final List<Port> portList = new ArrayList<>();
+  private final Interactor myUI;
+  private boolean portsOpen;
+  private GatewayDevice activeGW;
 
-  public static void addPort(int port) {
-    addPort(port, true, true);
+  /**
+   * Creates a new UPnPManager.
+   *
+   * @param ui The Interactor to update
+   */
+  public UPnPManager(Interactor ui) {
+    myUI = ui;
   }
 
-  public static void addPort(int port, boolean TCP, boolean UDP) {
+  public void addPort(int port, boolean TCP, boolean UDP) {
+    if (portsOpen) {
+      throw new IllegalStateException("Cannot add ports while ports are open!");
+    }
     portList.add(new Port(port, TCP, UDP));
   }
 
-  private static void clearPorts() {
+  public boolean openPorts(String IP) {
+    if (IP == null || !IP.contains(".")) {
+      throw new IllegalArgumentException("Invalid IP address: " + IP);
+    }
+    if (portsOpen) {
+      return true;
+    } else {
+      try {
+        myUI.setPortOpening(false);
+        myUI.updateStatus("Identifying router...");
+        activeGW = getGateway();
+        if (activeGW != null) {
+          myUI.updateStatus("Using gateway:" + activeGW.getFriendlyName());
+          checkCompatibility();
+          if (doOpenPorts()) { // doOpenPorts will update myUI as necessary
+            portsOpen = true;
+            return true;
+          } else {
+            myUI.setPortOpening(true);
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return true;
+    }
+  }
+
+  public boolean isOpen() {
+    return portsOpen;
+  }
+
+  public boolean closePorts() {
+    if (!portsOpen) {
+      return true;
+    }
+    System.out.println("Closing ports");
+    try {
+      for (Port portToMap : portList) {
+        if (portToMap.shouldForwardTPC()) {
+          if (!activeGW.deletePortMapping(portToMap.getPort(), "TCP")) {
+            println("Unable to remove port " + portToMap.getPort() + " TCP");
+          }
+        }
+        if (portToMap.shouldForwardUDP()) {
+          if (!activeGW.deletePortMapping(portToMap.getPort(), "UDP")) {
+            println("Unable to remove port " + portToMap.getPort() + " UDP");
+          }
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    UPnPFinished("Finished closing ports.");
+    return true;
+  }
+
+  private void clearPorts() {
     if (portsOpen) {
       println("ERROR: Unable to clear port list, portsOpen is true!");
       return;
@@ -39,91 +105,22 @@ public class UPnPManager {
     println("Ports list cleared");
   }
 
-  private static void println(String msg) {
-    System.out.println(msg);
-  }
-
-  public static boolean openPorts() {
-    if (portsOpen) {
-      return false;
-    } else {
-      PortForward.startNewThread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            portsOpen = true;
-            PortForward.setPortOptionsEnabled(false);
-            PortForward.setGUIButtonEnabled(false);
-            openUPnP();
-          } catch (Exception e) {
-          }
-        }
-      });
-      return true;
-    }
-  }
-
-  public static boolean isOpen() {
-    return portsOpen;
-  }
-
-  public static boolean closePorts() {
-    if (closePorts || !portsOpen) {
-      return false;
-    }
-    System.out.println("Closing ports");
-    closePorts = true;
-    return true;
-  }
-
-  private static void UPnPFinished(String s) {
-    closePorts = false;
-    portsOpen = false;
+  private void UPnPFinished(String message) {
     clearPorts();
-    PortForward.UPnPFinished(s);
+    myUI.updateStatus(message);
+    myUI.setPortOpening(true);
+    portsOpen = false;
   }
 
-  private static void openUPnP() throws Exception {
-    GatewayDevice activeGW = getGateway();
-    if (activeGW != null) {
-      println("Using gateway:" + activeGW.getFriendlyName());
-    } else {
-      println("No active gateway device found");
-      println("Stopping weupnp");
-      UPnPFinished("ERROR: No active gateway device found.");
-      return;
-    }
-    checkCompatibility(activeGW);
-    openUpPorts(activeGW);
-    while (!closePorts) {
-      Thread.sleep(100);
-    }
-    Iterator<Port> portIt = portList.iterator();
-    while (portIt.hasNext()) {
-      Port portToMap = portIt.next();
-      if (portToMap.TCP) {
-        if (!activeGW.deletePortMapping(portToMap.portNumber, "TCP")) {
-          println("Unable to remove port " + portToMap.portNumber + " TCP");
-        }
-      }
-      if (portToMap.UDP) {
-        if (!activeGW.deletePortMapping(portToMap.portNumber, "UDP")) {
-          println("Unable to remove port " + portToMap.portNumber + " UDP");
-        }
-      }
-    }
-    UPnPFinished("Finished closing ports.");
-  }
-
-  private static GatewayDevice getGateway() throws Exception {
-    PortForward.setGUIPortStatusText("Identifying router...");
+  private GatewayDevice getGateway() throws Exception {
+    myUI.updateStatus("Identifying router...");
     GatewayDiscover gatewayDiscover = new GatewayDiscover();
     println("Looking for Gateway Devices...");
     Map<InetAddress, GatewayDevice> gateways = gatewayDiscover.discover();
     if (gateways.isEmpty()) {
       println("No gateways found");
       println("Stopping weupnp");
-      UPnPFinished("ERROR: No gateways found.");
+      UPnPFinished("No active gateways found!");
       return null;
     }
     println(gateways.size() + " gateway(s) found\n");
@@ -141,8 +138,14 @@ public class UPnPManager {
     return gatewayDiscover.getValidGateway();
   }
 
-  private static void checkCompatibility(GatewayDevice activeGW) throws Exception {
-    PortForward.setGUIPortStatusText("Checking router compatibility...");
+  /**
+   * Checks compatibility with the given GatewayDevice. Prints out information to the command-line.
+   *
+   * @param activeGW The GatewayDevice to check
+   * @throws Exception If an Exception occurs
+   */
+  private void checkCompatibility() throws Exception {
+    myUI.updateStatus("Checking router compatibility...");
     // testing PortMappingNumberOfEntries
     Integer portMapCount = activeGW.getPortMappingNumberOfEntries();
     println("GetPortMappingNumberOfEntries=" + (portMapCount != null ? portMapCount.toString() : "(unsupported)"));
@@ -155,56 +158,46 @@ public class UPnPManager {
     }
   }
 
-  private static void openUpPorts(GatewayDevice activeGW) throws Exception {
-    // enableUPnP static lease duration mapping
+  /**
+   * Opens the ports on the given GatewayDevice.
+   *
+   * @param activeGW The GatewayDevice to open ports on
+   * @throws Exception If an Exception occurs while opening the ports
+   */
+  private boolean doOpenPorts() throws Exception {
+    // enableUPnP lease duration mapping
     InetAddress localAddress = activeGW.getLocalAddress();
     println("Using local address: " + localAddress.getHostAddress());
     String externalIPAddress = activeGW.getExternalIPAddress();
     println("External address: " + externalIPAddress);
     println("Sending port mapping request for ports.");
-    PortForward.setGUIPortStatusText("Opening ports...");
-    Iterator<Port> portIt = portList.iterator();
-    while (portIt.hasNext()) {
-      Port portToMap = portIt.next();
-      if (portToMap.TCP) {
-        PortForward.setGUIPortStatusText("Opening Port " + portToMap.portNumber + " (TCP)");
-        if (!activeGW.addPortMapping(portToMap.portNumber, portToMap.portNumber, localAddress.getHostAddress(), "TCP", "PortForward UPnP TCP")) {
-          println("Error mapping TCP port " + portToMap.portNumber);
-          UPnPFinished("Error mapping TCP port " + portToMap.portNumber);
-          return;
+    myUI.updateStatus("Opening ports...");
+    for (Port portToMap : portList) {
+      if (portToMap.shouldForwardTPC()) {
+        myUI.updateStatus("Opening Port " + portToMap.getPort() + " (TCP)");
+        if (!activeGW.addPortMapping(portToMap.getPort(), portToMap.getPort(), localAddress.getHostAddress(), "TCP", "PortForward UPnP TCP")) {
+          println("Error mapping TCP port " + portToMap.getPort());
+          UPnPFinished("Error mapping TCP port " + portToMap.getPort());
+          return false;
         }
       }
-      if (portToMap.UDP) {
-        PortForward.setGUIPortStatusText("Opening Port " + portToMap.portNumber + " (TCP)");
-        if (!activeGW.addPortMapping(portToMap.portNumber, portToMap.portNumber, localAddress.getHostAddress(), "UDP", "PortForward UPnP UDP")) {
-          println("Error mapping UDP port " + portToMap.portNumber);
-          UPnPFinished("Error mapping UDP port " + portToMap.portNumber);
-          return;
+      if (portToMap.shouldForwardUDP()) {
+        myUI.updateStatus("Opening Port " + portToMap.getPort() + " (TCP)");
+        if (!activeGW.addPortMapping(portToMap.getPort(), portToMap.getPort(), localAddress.getHostAddress(), "UDP", "PortForward UPnP UDP")) {
+          println("Error mapping UDP port " + portToMap.getPort());
+          UPnPFinished("Error mapping UDP port " + portToMap.getPort());
+          return false;
         }
       }
     }
     println("Mapping SUCCESSFUL!");
-    PortForward.setGUIPortStatusText("Ports are currently open!");
-    PortForward.setGUIButtonEnabled(true);
+    myUI.updateStatus("Ports are currently open!");
+    myUI.setPortClosing(true);
+    return true;
   }
 
-  private static class Port {
-
-    public int portNumber;
-    public boolean TCP;
-    public boolean UDP;
-
-    public Port(int pN) {
-      portNumber = pN;
-      TCP = true;
-      UDP = true;
-    }
-
-    public Port(int pN, boolean useTCP, boolean useUDP) {
-      portNumber = pN;
-      TCP = useTCP;
-      UDP = useUDP;
-    }
+  private void println(String msg) {
+    System.out.println(msg);
   }
 
 }

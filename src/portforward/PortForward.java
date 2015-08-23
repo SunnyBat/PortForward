@@ -1,52 +1,47 @@
 package portforward;
 
+import portforward.ui.CLI;
+import portforward.ui.GUI;
+import portforward.ui.Interactor;
+
 /**
  *
  * @author Sunnybat
  */
 public class PortForward {
 
-  private static GUI myGUI;
+  private static Interactor myUI;
+  private static UPnPManager myManager;
+  private static boolean exit;
 
   /**
    * @param args the command line arguments
    */
   public static void main(String[] args) {
     // TODO code application logic here
-    myGUI = new GUI();
-    myGUI.setVisible(true);
+    if (args.length > 0 && args[0].equals("-cli")) {
+      myUI = new CLI();
+    } else {
+      myUI = new GUI();
+    }
+    myManager = new UPnPManager(myUI);
+    while (true) {
+      myUI.waitForAction();
+      if (exit) {
+        return;
+      } else if (myManager.isOpen()) {
+        myManager.closePorts();
+      } else {
+        myManager.openPorts(myUI.getIPToForward());
+      }
+    }
   }
 
   public static void exitProgram() {
-    myGUI.dispose();
-  }
-
-  public static void showProgramWindow() {
-    myGUI.maximizeWindow();
-  }
-
-  public static void UPnPFinished(String message) {
-    if (message != null) {
-      setGUIPortStatusText(message);
+    exit = true;
+    if (myManager.isOpen()) {
+      myManager.closePorts();
     }
-    myGUI.setButtonEnabled(true);
-    //myGUI.callButtonAction();
-    if (myGUI.isDisplayable()) {
-      myGUI.maximizeWindow();
-    }
-    myGUI.setPortOptionsEnabled(true);
-  }
-
-  public static void setGUIPortStatusText(String text) {
-    myGUI.setPortStatusText("Port Status: " + text);
-  }
-
-  public static void setGUIButtonEnabled(boolean enabled) {
-    myGUI.setButtonEnabled(enabled);
-  }
-
-  public static void setPortOptionsEnabled(Boolean enabled) {
-    myGUI.setPortOptionsEnabled(enabled);
   }
 
   /**
