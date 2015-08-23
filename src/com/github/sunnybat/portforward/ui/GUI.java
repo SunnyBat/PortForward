@@ -2,8 +2,8 @@ package com.github.sunnybat.portforward.ui;
 
 import com.github.sunnybat.portforward.Port;
 import com.github.sunnybat.portforward.PortForward;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
+import java.awt.Image;
+import java.awt.MenuItem;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +14,6 @@ import java.util.List;
  */
 public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame implements Interactor {
 
-  private SystemTray tray;
-  private TrayIcon myIcon;
-  private java.awt.Image myImage;
-  private IconMenu menu;
   private final List<PortPanel> portPanelList = new ArrayList<>();
 
   /**
@@ -38,68 +34,53 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
 
   private void customComponents() {
     this.setLocationRelativeTo(null);
-    tray = SystemTray.getSystemTray();
-    menu = new IconMenu(this);
     try {
-      myImage = javax.imageio.ImageIO.read(PortForward.class.getResourceAsStream("/resources/Icon.png"));
+      Image myImage = javax.imageio.ImageIO.read(PortForward.class.getResourceAsStream("/resources/Icon.png"));
+      setTrayIcon("PortForward", myImage);
       setIconImage(myImage);
-      myIcon = new TrayIcon(myImage, "Portfowarding Tool", menu);
-      myIcon.setImageAutoSize(true);
-      myIcon.addActionListener(new java.awt.event.ActionListener() {
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-          maximizeWindow();
-        }
-      });
       setVisible(true);
     } catch (IOException iOException) {
       iOException.printStackTrace();
     }
     ((javax.swing.JSpinner.NumberEditor) JSPort.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
+    MenuItem openWindow = new MenuItem("Restore Window");
+    MenuItem closeProgram = new MenuItem("Close Program");
+    closeProgram.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        dispose();
+      }
+    });
+    openWindow.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        restoreFromTray();
+      }
+    });
+    getPopupMenu().add(openWindow);
+    getPopupMenu().add(closeProgram);
   }
 
-  public void minimizeWindow() {
+  @Override
+  public void minimizeToTray() {
     invokeAndWaitOnEDT(new Runnable() {
       @Override
       public void run() {
         try {
           JSPort.commitEdit(); // Update the spinner value. If invalid, uses the last known valid value (keypresses don't update the last known value)
-          // TODO: Add open/close button
-          tray.add(myIcon);
         } catch (Exception e) {
           e.printStackTrace();
         }
         setVisible(false);
       }
     });
-  }
-
-  public void maximizeWindow() {
-    invokeAndWaitOnEDT(new Runnable() {
-      @Override
-      public void run() {
-        setExtendedState(javax.swing.JFrame.NORMAL);
-        setVisible(true);
-        setLocationRelativeTo(null);
-        toFront();
-        tray.remove(myIcon);
-      }
-    });
+    // TODO: Add open/close port buttons
+    super.minimizeToTray();
   }
 
   @Override
   public void dispose() {
-    super.dispose();
-    invokeAndWaitOnEDT(new Runnable() {
-      @Override
-      public void run() {
-        tray.remove(myIcon);
-        PortForward.exitProgram();
-        synchronized (this) {
-          this.notify();
-        }
-      }
-    });
+    super.dispose(); // CHECK: Synchronization?
+    PortForward.exitProgram();
+    continuePressed();
   }
 
   @Override
@@ -177,14 +158,14 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     });
   }
 
-  protected void addPortPanel(final PortPanel panel) {
+  void addPortPanel(final PortPanel panel) {
     portPanelList.add(panel);
     JPPortPanels.add(panel);
     JPPortPanels.revalidate();
     pack();
   }
 
-  protected void removePortPanel(PortPanel panel) {
+  void removePortPanel(PortPanel panel) {
     portPanelList.remove(panel);
     JPPortPanels.remove(panel);
     JPPortPanels.revalidate();
@@ -195,7 +176,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
    * Validates the current user-inputted program settings. If any of the settings are invalid, this disables the Action button, otherwise this enables
    * it.
    */
-  protected void validateProgramSettings() {
+  void validateProgramSettings() {
     // TODO: Verify port number
     if (!JCBTCP.isSelected() && !JCBUDP.isSelected()) {
       JBAction.setEnabled(false);
@@ -208,6 +189,12 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
       }
     }
     JBAction.setEnabled(true);
+  }
+
+  private void continuePressed() {
+    synchronized (this) {
+      this.notify();
+    }
   }
 
   /**
@@ -348,9 +335,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
 
   private void JBActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JBActionActionPerformed
     //TODO: Check if settings are valid before proceeding, otherwise display error
-    synchronized (this) {
-      this.notify();
-    }
+    continuePressed();
   }//GEN-LAST:event_JBActionActionPerformed
 
   private void JCBTCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JCBTCPActionPerformed
@@ -365,7 +350,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
 
   private void formWindowIconified(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowIconified
     // TODO add your handling code here:
-    minimizeWindow();
+    minimizeToTray();
   }//GEN-LAST:event_formWindowIconified
 
   private void JBAddPortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JBAddPortActionPerformed
