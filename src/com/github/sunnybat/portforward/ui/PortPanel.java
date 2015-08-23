@@ -1,6 +1,6 @@
-package portforward.ui;
+package com.github.sunnybat.portforward.ui;
 
-import portforward.Port;
+import com.github.sunnybat.portforward.Port;
 
 /**
  *

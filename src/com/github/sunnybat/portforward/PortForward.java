@@ -1,9 +1,9 @@
-package portforward;
+package com.github.sunnybat.portforward;
 
-import java.io.IOException;
-import portforward.ui.CLI;
-import portforward.ui.GUI;
-import portforward.ui.Interactor;
+import com.github.sunnybat.commoncode.utilities.IPAddress;
+import com.github.sunnybat.portforward.ui.CLI;
+import com.github.sunnybat.portforward.ui.GUI;
+import com.github.sunnybat.portforward.ui.Interactor;
 
 /**
  *
@@ -20,10 +20,11 @@ public class PortForward {
    */
   public static void main(String[] args) {
     // TODO code application logic here
+    String defaultIP = IPAddress.getInternalIP();
     if (args.length > 0 && args[0].equals("-cli")) {
-      myUI = new CLI(getInternalIP());
+      myUI = new CLI(defaultIP);
     } else {
-      myUI = new GUI(getInternalIP());
+      myUI = new GUI(defaultIP);
     }
     myManager = new UPnPManager(myUI);
     while (!exit) {
@@ -59,18 +60,5 @@ public class PortForward {
     Thread newThread = new Thread(run);
     newThread.setName(name);
     newThread.start(); // Start the Thread
-  }
-
-  /**
-   * Gets the internal IP address of the given machine.
-   *
-   * @return The visible IP address, or [Not Found] if unable to find it
-   */
-  private static String getInternalIP() {
-    try {
-      return java.net.Inet4Address.getLocalHost().getHostAddress();
-    } catch (IOException e) {
-      return "[Not Found]";
-    }
   }
 }

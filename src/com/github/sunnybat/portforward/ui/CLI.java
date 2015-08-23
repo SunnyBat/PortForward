@@ -1,10 +1,10 @@
-package portforward.ui;
+package com.github.sunnybat.portforward.ui;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import portforward.Port;
-import portforward.PortForward;
+import com.github.sunnybat.portforward.Port;
+import com.github.sunnybat.portforward.PortForward;
 
 /**
  *

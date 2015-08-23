@@ -1,4 +1,4 @@
-package portforward;
+package com.github.sunnybat.portforward;
 
 /**
  *

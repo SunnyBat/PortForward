@@ -1,18 +1,18 @@
-package portforward.ui;
+package com.github.sunnybat.portforward.ui;
 
-import portforward.Port;
+import com.github.sunnybat.portforward.Port;
+import com.github.sunnybat.portforward.PortForward;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.io.IOException;
-import java.util.*;
-import portforward.PortForward;
-import portforward.UPnPManager;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author Sunnybat
  */
-public class GUI extends javax.swing.JFrame implements Interactor {
+public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame implements Interactor {
 
   private SystemTray tray;
   private TrayIcon myIcon;
@@ -25,10 +25,15 @@ public class GUI extends javax.swing.JFrame implements Interactor {
    *
    * @param defaultIP The default IP address to forward to
    */
-  public GUI(String defaultIP) {
-    initComponents();
-    customComponents();
-    JTFIPToForwardTo.setText(defaultIP);
+  public GUI(final String defaultIP) {
+    invokeAndWaitOnEDT(new Runnable() {
+      @Override
+      public void run() {
+        initComponents();
+        customComponents();
+        JTFIPToForwardTo.setText(defaultIP);
+      }
+    });
   }
 
   private void customComponents() {
@@ -54,32 +59,47 @@ public class GUI extends javax.swing.JFrame implements Interactor {
   }
 
   public void minimizeWindow() {
-    try {
-      JSPort.commitEdit(); // Update the spinner value. If invalid, uses the last known valid value (keypresses don't update the last known value)
-      // TODO: Add open/close button
-      tray.add(myIcon);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    setVisible(false);
+    invokeAndWaitOnEDT(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          JSPort.commitEdit(); // Update the spinner value. If invalid, uses the last known valid value (keypresses don't update the last known value)
+          // TODO: Add open/close button
+          tray.add(myIcon);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        setVisible(false);
+      }
+    });
   }
 
   public void maximizeWindow() {
-    setExtendedState(javax.swing.JFrame.NORMAL);
-    setVisible(true);
-    this.setLocationRelativeTo(null);
-    this.toFront();
-    tray.remove(myIcon);
+    invokeAndWaitOnEDT(new Runnable() {
+      @Override
+      public void run() {
+        setExtendedState(javax.swing.JFrame.NORMAL);
+        setVisible(true);
+        setLocationRelativeTo(null);
+        toFront();
+        tray.remove(myIcon);
+      }
+    });
   }
 
   @Override
   public void dispose() {
-    tray.remove(myIcon);
     super.dispose();
-    PortForward.exitProgram();
-    synchronized (this) {
-      this.notify();
-    }
+    invokeAndWaitOnEDT(new Runnable() {
+      @Override
+      public void run() {
+        tray.remove(myIcon);
+        PortForward.exitProgram();
+        synchronized (this) {
+          this.notify();
+        }
+      }
+    });
   }
 
   @Override
@@ -113,7 +133,7 @@ public class GUI extends javax.swing.JFrame implements Interactor {
 
   @Override
   public void updateStatus(final String text) {
-    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+    invokeAndWaitOnEDT(new Runnable() {
       @Override
       public void run() {
         JLPortStatus.setText(text);
@@ -123,7 +143,7 @@ public class GUI extends javax.swing.JFrame implements Interactor {
 
   @Override
   public void setPortOpening(final boolean enabled) {
-    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+    invokeAndWaitOnEDT(new Runnable() {
       @Override
       public void run() {
         JBAction.setText("Open Ports");
@@ -141,7 +161,7 @@ public class GUI extends javax.swing.JFrame implements Interactor {
 
   @Override
   public void setPortClosing(final boolean enabled) {
-    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+    invokeAndWaitOnEDT(new Runnable() {
       @Override
       public void run() {
         JBAction.setText("Close Ports");

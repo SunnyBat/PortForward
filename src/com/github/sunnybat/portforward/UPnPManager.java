@@ -1,4 +1,4 @@
-package portforward;
+package com.github.sunnybat.portforward;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -7,7 +7,7 @@ import java.util.Map;
 import org.bitlet.weupnp.GatewayDevice;
 import org.bitlet.weupnp.GatewayDiscover;
 import org.bitlet.weupnp.PortMappingEntry;
-import portforward.ui.Interactor;
+import com.github.sunnybat.portforward.ui.Interactor;
 
 /**
  *

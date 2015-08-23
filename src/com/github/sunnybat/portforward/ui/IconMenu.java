@@ -1,9 +1,9 @@
-package portforward.ui;
+package com.github.sunnybat.portforward.ui;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
-import portforward.PortForward;
-import portforward.UPnPManager;
+import com.github.sunnybat.portforward.PortForward;
+import com.github.sunnybat.portforward.UPnPManager;
 
 /**
  *
