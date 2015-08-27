@@ -46,19 +46,4 @@ public class PortForward {
       myManager.closePorts();
     }
   }
-
-  /**
-   * This makes a new daemon, low-priority Thread and runs it.
-   *
-   * @param run The Runnable to make into a Thread and run
-   */
-  public static void startNewThread(Runnable run) {
-    startNewThread(run, "General Background Thread");
-  }
-
-  public static void startNewThread(Runnable run, String name) {
-    Thread newThread = new Thread(run);
-    newThread.setName(name);
-    newThread.start(); // Start the Thread
-  }
 }

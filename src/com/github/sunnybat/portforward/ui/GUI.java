@@ -2,6 +2,7 @@ package com.github.sunnybat.portforward.ui;
 
 import com.github.sunnybat.portforward.Port;
 import com.github.sunnybat.portforward.PortForward;
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.io.IOException;
@@ -42,7 +43,8 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     } catch (IOException iOException) {
       iOException.printStackTrace();
     }
-    ((javax.swing.JSpinner.NumberEditor) JSPort.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
+    ((javax.swing.JSpinner.NumberEditor) JSPort.getEditor()).getTextField().setDisabledTextColor(Color.DARK_GRAY);
+    JTFIPToForwardTo.setDisabledTextColor(Color.DARK_GRAY);
     MenuItem openWindow = new MenuItem("Restore Window");
     MenuItem closeProgram = new MenuItem("Close Program");
     closeProgram.addActionListener(new java.awt.event.ActionListener() {
@@ -132,6 +134,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
         JCBTCP.setEnabled(enabled);
         JCBUDP.setEnabled(enabled);
         JSPort.setEnabled(enabled);
+        JTFIPToForwardTo.setEnabled(enabled);
         JBAddPort.setEnabled(enabled);
         for (PortPanel panel : portPanelList) {
           panel.setPortOptionsEnabled(enabled);
@@ -150,6 +153,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
         JCBTCP.setEnabled(false);
         JCBUDP.setEnabled(false);
         JSPort.setEnabled(false);
+        JTFIPToForwardTo.setEnabled(false);
         JBAddPort.setEnabled(false);
         for (PortPanel panel : portPanelList) {
           panel.setPortOptionsEnabled(false);
