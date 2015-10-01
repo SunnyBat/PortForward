@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * A Graphical User Interface class to interact with the user through an interface.
  *
  * @author Sunnybat
  */
 public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame implements Interactor {
 
   private final List<PortPanel> portPanelList = new ArrayList<>();
+  private boolean exitRequested;
 
   /**
    * Creates new form GUI
@@ -81,7 +83,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
   @Override
   public void dispose() {
     super.dispose(); // CHECK: Synchronization?
-    PortForward.exitProgram();
+    exitRequested = true;
     continuePressed();
   }
 
@@ -162,6 +164,16 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     });
   }
 
+  @Override
+  public boolean exitRequested() {
+    return exitRequested;
+  }
+
+  /**
+   * Adds a port panel to the GUI and to
+   *
+   * @param panel
+   */
   void addPortPanel(final PortPanel panel) {
     portPanelList.add(panel);
     JPPortPanels.add(panel);
@@ -246,7 +258,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
       }
     });
 
-    JLPortStatus.setText("[Port Status]");
+    JLPortStatus.setText(" ");
 
     JCBTCP.setSelected(true);
     JCBTCP.setText("TCP");
@@ -320,7 +332,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
           .addComponent(JCBTCP)
           .addComponent(JCBUDP)
           .addComponent(JBAddPort))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addGap(0, 0, 0)
         .addComponent(JPPortPanels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)

@@ -49,4 +49,11 @@ public interface Interactor {
    */
   public void waitForAction();
 
+  /**
+   * Checks whether or not the user has told the program to exit.
+   *
+   * @return True to exit, false to continue
+   */
+  public boolean exitRequested();
+
 }

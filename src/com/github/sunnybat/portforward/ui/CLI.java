@@ -1,13 +1,13 @@
 package com.github.sunnybat.portforward.ui;
 
+import com.github.sunnybat.portforward.Port;
+import com.github.sunnybat.portforward.PortForward;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import com.github.sunnybat.portforward.Port;
-import com.github.sunnybat.portforward.PortForward;
 
 /**
- *
+ * A class for interacting with the user through the command-line. This uses System.in and System.out to interact with the user.
  * @author SunnyBat
  */
 public class CLI implements Interactor {
@@ -17,7 +17,13 @@ public class CLI implements Interactor {
   private String forwardIP;
   private boolean isOpen;
   private boolean release;
+  private boolean exitRequested;
 
+  /**
+   * Creates a new Command-Line Interface Interactor.
+   *
+   * @param defaultIP The default IP address to use
+   */
   public CLI(String defaultIP) {
     forwardIP = defaultIP;
     System.out.println("Default IP address: " + forwardIP);
@@ -43,6 +49,17 @@ public class CLI implements Interactor {
     }
   }
 
+  @Override
+  public boolean exitRequested() {
+    return exitRequested;
+  }
+
+  /**
+   * Parses the given command and performs any action necessary. If command is unknown, it prints the current list of valid commands. This may call
+   * release().
+   *
+   * @param command The command to parse
+   */
   private void parseCommand(String command) { // In case we need to recurse
     switch (command.toLowerCase()) {
       case "open":
@@ -126,7 +143,7 @@ public class CLI implements Interactor {
         System.out.println("Forwarding To: " + forwardIP);
         break;
       case "exit":
-        PortForward.exitProgram();
+        exitRequested = true;
         release();
         return;
       default:
@@ -149,6 +166,11 @@ public class CLI implements Interactor {
     System.out.println();
   }
 
+  /**
+   * Prompts the user for a valid port number. Continues to prompt until a valid port number is given.
+   *
+   * @return A valid port number
+   */
   private int promptForPortNumber() {
     try {
       int num = Integer.parseInt(in.nextLine());
@@ -164,6 +186,11 @@ public class CLI implements Interactor {
     }
   }
 
+  /**
+   * Removes the given port number from the current list of ports to open.
+   *
+   * @param portNum The port number to remove
+   */
   private void removePort(int portNum) {
     for (Port p : portsToOpen) {
       if (p.getPort() == portNum) {
@@ -173,6 +200,13 @@ public class CLI implements Interactor {
     }
   }
 
+  /**
+   * Parses whether or not the given input starts with a Y or N.
+   *
+   * @param parse The String to parse
+   * @param unknownReturn The default return value if parse does not start with Y or N
+   * @return True if parse starts with Y, false if N, and unknownReturn if neither
+   */
   private boolean parseYesNo(String parse, boolean unknownReturn) {
     if (parse == null || parse.length() == 0) {
       return unknownReturn;
@@ -188,6 +222,9 @@ public class CLI implements Interactor {
     }
   }
 
+  /**
+   * Releases this Interactor's lock and tells the program to perform an action.
+   */
   private void release() {
     release = true;
     synchronized (this) {
