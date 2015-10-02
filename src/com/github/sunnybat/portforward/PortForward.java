@@ -20,7 +20,6 @@ public class PortForward {
    * @param args the command line arguments
    */
   public static void main(String[] args) {
-    // TODO code application logic here
     String defaultIP = IPAddress.getInternalIP();
     if (args.length > 0 && args[0].equals("-cli")) {
       myUI = new CLI(defaultIP);
