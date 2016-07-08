@@ -18,6 +18,7 @@ public class CLI implements Interactor {
   private boolean isOpen;
   private boolean release;
   private boolean exitRequested;
+  private boolean forceClose;
 
   /**
    * Creates a new Command-Line Interface Interactor.
@@ -47,6 +48,15 @@ public class CLI implements Interactor {
       String next = in.nextLine();
       parseCommand(next);
     }
+  }
+
+  @Override
+  public ACTION getAction() {
+    if (forceClose) {
+      forceClose = false;
+      return ACTION.FORCECLOSE;
+    }
+    return ACTION.DEFAULT;
   }
 
   @Override
@@ -80,6 +90,14 @@ public class CLI implements Interactor {
         } else {
           isOpen = false;
           release();
+        }
+        break;
+      case "forceclose":
+        if (!isOpen) {
+          forceClose = true;
+          release();
+        } else {
+          System.out.println("Force closing is currently not allowed!");
         }
         break;
       case "addport":
@@ -152,6 +170,7 @@ public class CLI implements Interactor {
         System.out.println("Currently supported commands are as follows:");
         System.out.println("Open           -- Opens the currently added ports if closed");
         System.out.println("Close          -- Closes the currently added ports if open");
+        System.out.println("ForceClose     -- Attempts to remove existing mappings for the currently added ports");
         System.out.println("AddPort        -- Adds a port to the program (does not open automatically)");
         System.out.println("RemovePort     -- Removes a port from the program (only when ports are closed)");
         System.out.println("ClearPorts     -- Removes all ports from the program (only when ports are closed)");
@@ -239,10 +258,12 @@ public class CLI implements Interactor {
 
   @Override
   public void setPortOpening(final boolean enabled) {
+    isOpen = false;
   }
 
   @Override
   public void setPortClosing(final boolean enabled) {
+    isOpen = true;
   }
 
 }

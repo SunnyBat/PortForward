@@ -18,6 +18,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
 
   private final List<PortPanel> portPanelList = new ArrayList<>();
   private boolean exitRequested;
+  private boolean forceClose;
 
   /**
    * Creates new form GUI
@@ -117,6 +118,15 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
   }
 
   @Override
+  public ACTION getAction() {
+    if (forceClose) {
+      forceClose = false;
+      return ACTION.FORCECLOSE;
+    }
+    return ACTION.DEFAULT;
+  }
+
+  @Override
   public void updateStatus(final String text) {
     invokeAndWaitOnEDT(new Runnable() {
       @Override
@@ -133,6 +143,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
       public void run() {
         JBAction.setText("Open Ports");
         JBAction.setEnabled(enabled);
+        JBForceClose.setEnabled(enabled);
         JCBTCP.setEnabled(enabled);
         JCBUDP.setEnabled(enabled);
         JSPort.setEnabled(enabled);
@@ -152,6 +163,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
       public void run() {
         JBAction.setText("Close Ports");
         JBAction.setEnabled(enabled);
+        JBForceClose.setEnabled(false);
         JCBTCP.setEnabled(false);
         JCBUDP.setEnabled(false);
         JSPort.setEnabled(false);
@@ -233,6 +245,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     jLabel3 = new javax.swing.JLabel();
     JTFIPToForwardTo = new javax.swing.JTextField();
     jLabel4 = new javax.swing.JLabel();
+    JBForceClose = new javax.swing.JButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setResizable(false);
@@ -290,6 +303,14 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     jLabel4.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
     jLabel4.setText("(Defaults to this computer)");
 
+    JBForceClose.setText("Force Close Ports");
+    JBForceClose.setToolTipText("<html>\nTries to remove port mappings for listed ports,<br>\neven if they're not opened by this program.<br>\nThis can sometimes fix issues when the program<br>\nspits back a \"Cannot open Port X\" error.\n</html>");
+    JBForceClose.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        JBForceCloseActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -317,7 +338,8 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
             .addComponent(JTFIPToForwardTo, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
             .addComponent(jLabel4)
-            .addGap(0, 0, Short.MAX_VALUE)))
+            .addGap(0, 0, Short.MAX_VALUE))
+          .addComponent(JBForceClose, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -339,10 +361,12 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
           .addComponent(jLabel3)
           .addComponent(JTFIPToForwardTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(jLabel4))
+        .addGap(18, 18, 18)
+        .addComponent(JBAction)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(JBForceClose)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addComponent(JLPortStatus)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addComponent(JBAction)
         .addContainerGap())
     );
 
@@ -374,9 +398,16 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     addPortPanel(new PortPanel(this));
   }//GEN-LAST:event_JBAddPortActionPerformed
 
+  private void JBForceCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JBForceCloseActionPerformed
+    // TODO add your handling code here:
+    forceClose = true;
+    continuePressed();
+  }//GEN-LAST:event_JBForceCloseActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton JBAction;
   private javax.swing.JButton JBAddPort;
+  private javax.swing.JButton JBForceClose;
   private javax.swing.JCheckBox JCBTCP;
   private javax.swing.JCheckBox JCBUDP;
   private volatile javax.swing.JLabel JLPortStatus;

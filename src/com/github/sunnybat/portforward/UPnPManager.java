@@ -1,5 +1,6 @@
 package com.github.sunnybat.portforward;
 
+import com.github.sunnybat.portforward.ui.Interactor;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +8,6 @@ import java.util.Map;
 import org.bitlet.weupnp.GatewayDevice;
 import org.bitlet.weupnp.GatewayDiscover;
 import org.bitlet.weupnp.PortMappingEntry;
-import com.github.sunnybat.portforward.ui.Interactor;
 
 /**
  *
@@ -29,32 +29,39 @@ public class UPnPManager {
     myUI = ui;
   }
 
-  public void addPort(int port, boolean TCP, boolean UDP) {
+  private boolean isValidPort(int port) {
+    return port > 0 && port <= 65535;
+  }
+
+  public boolean addPort(int port, boolean TCP, boolean UDP) {
+    return addPort(new Port(port, TCP, UDP));
+  }
+
+  public boolean addPort(Port toAdd) {
     if (portsOpen) {
-      throw new IllegalStateException("Cannot add ports while ports are open!");
+      return false;
     }
-    removePort(port);
-    portList.add(new Port(port, TCP, UDP));
-  }
-
-  public void addPort(Port toAdd) {
+    if (!isValidPort(toAdd.getPort())) {
+      return false;
+    }
     removePort(toAdd.getPort());
+    return portList.add(toAdd);
   }
 
-  public void addPorts(List<Port> toAdd) {
-    for (Port p : toAdd) {
-      removePort(p.getPort());
-      portList.add(p);
+  public boolean removePort(int portNum) {
+    if (portsOpen) {
+      return false;
     }
-  }
-
-  private void removePort(int portNum) {
+    if (!isValidPort(portNum)) {
+      return false;
+    }
     for (Port p : portList) {
       if (p.getPort() == portNum) {
         portList.remove(p);
-        return;
+        return true;
       }
     }
+    return false;
   }
 
   /**
@@ -62,21 +69,19 @@ public class UPnPManager {
    *
    * @param IP The IP address to forward to
    * @return True if ports opened, false if not
-   * @throws IllegalArgumentException If IP is an invalid IP address
-   * @throws IllegalStateException If no ports are currently added to this UPnPManager
    */
   public boolean openPorts(String IP) {
     if (IP == null || !IP.contains(".")) {
-      throw new IllegalArgumentException("Invalid IP address: " + IP);
+      return false;
     } else if (portList.isEmpty()) {
-      throw new IllegalStateException("No ports added");
+      return false;
     }
     if (portsOpen) {
       return true;
     } else {
       try {
         myUI.setPortOpening(false);
-        currentGateway = getGateway();
+        currentGateway = getGateway(); // Always refresh gateway
         if (currentGateway != null) {
           checkCompatibility();
           if (doOpenPorts(IP)) { // doOpenPorts will update myUI as necessary
@@ -96,7 +101,7 @@ public class UPnPManager {
     }
   }
 
-  public boolean isOpen() {
+  public boolean arePortsOpen() {
     return portsOpen;
   }
 
@@ -106,9 +111,15 @@ public class UPnPManager {
    * @return True if all open ports were closed, false otherwise
    */
   public boolean closePorts() {
-    if (!portsOpen) {
-      portList.clear();
-      return true;
+    if (portList.isEmpty()) {
+      return false;
+    }
+    if (currentGateway == null) {
+      try {
+        currentGateway = getGateway();
+      } catch (Exception e) {
+        return false;
+      }
     }
     myUI.updateStatus("Closing ports");
     boolean allRemoved = true;

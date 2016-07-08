@@ -9,6 +9,10 @@ import java.util.List;
  */
 public interface Interactor {
 
+  public static enum ACTION {
+    DEFAULT, FORCECLOSE
+  }
+
   /**
    * Gets the local IP address to forward ports to. This may or may not be a valid IP address.
    *
@@ -48,6 +52,13 @@ public interface Interactor {
    * Waits for the user to tell the program to proceed with the next action. This will block until the user proceeds.
    */
   public void waitForAction();
+
+  /**
+   * Gets the action to perform.
+   *
+   * @return The action to perform
+   */
+  public ACTION getAction();
 
   /**
    * Checks whether or not the user has told the program to exit.

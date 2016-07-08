@@ -45,7 +45,7 @@
                       <Component id="JBAddPort" pref="92" max="32767" attributes="0"/>
                   </Group>
                   <Component id="JPPortPanels" alignment="0" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="JTFIPToForwardTo" min="-2" pref="83" max="-2" attributes="0"/>
@@ -53,6 +53,7 @@
                       <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="JBForceClose" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -79,10 +80,12 @@
                   <Component id="JTFIPToForwardTo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="JBAction" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="JBForceClose" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
               <Component id="JLPortStatus" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="JBAction" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -178,6 +181,15 @@
         </Property>
         <Property name="text" type="java.lang.String" value="(Defaults to this computer)"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="JBForceClose">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Force Close Ports"/>
+        <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;&#xa;Tries to remove port mappings for listed ports,&lt;br&gt;&#xa;even if they&apos;re not opened by this program.&lt;br&gt;&#xa;This can sometimes fix issues when the program&lt;br&gt;&#xa;spits back a &quot;Cannot open Port X&quot; error.&#xa;&lt;/html&gt;"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="JBForceCloseActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
