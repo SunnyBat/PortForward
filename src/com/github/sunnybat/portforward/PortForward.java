@@ -55,17 +55,19 @@ public class PortForward {
         offset++;
       }
     }
-    try {
-      myUI.setPortClosing(false);
-      for (Port p : portsToOpen) {
-        myManager.addPort(p);
+    if (!portsToOpen.isEmpty()) {
+      try {
+        myUI.setPortClosing(false);
+        for (Port p : portsToOpen) {
+          myManager.addPort(p);
+        }
+        myManager.closePorts();
+        for (Port p : portsToOpen) {
+          myManager.addPort(p);
+        }
+        myManager.openPorts(initialIP);
+      } catch (IllegalStateException ise) {
       }
-      myManager.closePorts();
-      for (Port p : portsToOpen) {
-        myManager.addPort(p);
-      }
-      myManager.openPorts(initialIP);
-    } catch (IllegalStateException ise) {
     }
     while (!myUI.exitRequested()) {
       myUI.waitForAction();

@@ -44,7 +44,14 @@ public class CLI implements Interactor {
   @Override
   public void waitForAction() {
     release = false;
+    System.out.println("WFA");
     while (!release) {
+      while (!in.hasNextLine()) { // Hacky workaround for Arch Linux autostart while still providing some level of functionality if this returns false in a CLI environment
+        try {
+          Thread.sleep(250);
+        } catch (InterruptedException iE) {
+        }
+      }
       String next = in.nextLine();
       parseCommand(next);
     }

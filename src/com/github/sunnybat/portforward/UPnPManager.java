@@ -117,6 +117,10 @@ public class UPnPManager {
     if (currentGateway == null) {
       try {
         currentGateway = getGateway();
+        if (currentGateway == null) {
+          System.err.println("Unable to find gateway device!");
+          return false;
+        }
       } catch (Exception e) {
         return false;
       }
