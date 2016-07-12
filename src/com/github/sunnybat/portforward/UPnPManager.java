@@ -29,14 +29,34 @@ public class UPnPManager {
     myUI = ui;
   }
 
+  /**
+   * Checks whether or not the given port number is valid.
+   *
+   * @param port The port number to check
+   * @return True if valid, false if invalid
+   */
   private boolean isValidPort(int port) {
     return port > 0 && port <= 65535;
   }
 
+  /**
+   * Adds the given port to this UPnPManager. This will override any conflicting ports already added. This cannot be called while ports are open.
+   *
+   * @param port The port number to add
+   * @param TCP Whether or not to forward TCP
+   * @param UDP Whether or not to forward UDP
+   * @return True if successfully added, false if not
+   */
   public boolean addPort(int port, boolean TCP, boolean UDP) {
     return addPort(new Port(port, TCP, UDP));
   }
 
+  /**
+   * Adds the given Port to this UPnPManager. This will override any conflicting ports already added. This cannot be called while ports are open.
+   *
+   * @param toAdd The Port to add
+   * @return True if successfully added, false if not
+   */
   public boolean addPort(Port toAdd) {
     if (portsOpen) {
       return false;
@@ -44,10 +64,19 @@ public class UPnPManager {
     if (!isValidPort(toAdd.getPort())) {
       return false;
     }
+    if (!toAdd.shouldForwardTPC() && !toAdd.shouldForwardUDP()) {
+      return false;
+    }
     removePort(toAdd.getPort());
     return portList.add(toAdd);
   }
 
+  /**
+   * Removes the given port number from this UPnPManager. This removes both TCP and UDP forwarding. This cannot be called while ports are open.
+   *
+   * @param portNum The port number to remove
+   * @return True if removed, false if not present or unable to remove
+   */
   public boolean removePort(int portNum) {
     if (portsOpen) {
       return false;
@@ -101,6 +130,11 @@ public class UPnPManager {
     }
   }
 
+  /**
+   * Checks whether or not ports are currently open.
+   *
+   * @return True if ports are open, false if not
+   */
   public boolean arePortsOpen() {
     return portsOpen;
   }
@@ -131,18 +165,18 @@ public class UPnPManager {
       for (Port portToMap : portList) {
         if (portToMap.shouldForwardTPC()) {
           if (!currentGateway.deletePortMapping(portToMap.getPort(), "TCP")) {
-            println("Unable to remove port " + portToMap.getPort() + " (TCP)");
+            System.out.println("Unable to remove port " + portToMap.getPort() + " (TCP)");
             allRemoved = false;
           } else {
-            println("Removed port " + portToMap.getPort() + " (TCP)");
+            System.out.println("Removed port " + portToMap.getPort() + " (TCP)");
           }
         }
         if (portToMap.shouldForwardUDP()) {
           if (!currentGateway.deletePortMapping(portToMap.getPort(), "UDP")) {
-            println("Unable to remove port " + portToMap.getPort() + " (UDP)");
+            System.out.println("Unable to remove port " + portToMap.getPort() + " (UDP)");
             allRemoved = false;
           } else {
-            println("Removed port " + portToMap.getPort() + " (UDP)");
+            System.out.println("Removed port " + portToMap.getPort() + " (UDP)");
           }
         }
       }
@@ -153,15 +187,23 @@ public class UPnPManager {
     return allRemoved;
   }
 
+  /**
+   * Clear all ports from this UPnPManager
+   */
   private void clearPorts() {
     if (portsOpen) {
-      println("ERROR: Unable to clear port list, portsOpen is true!");
+      System.out.println("ERROR: Unable to clear port list, portsOpen is true!");
       return;
     }
     portList.clear();
-    println("Ports list cleared");
+    System.out.println("Ports list cleared");
   }
 
+  /**
+   * Called when finished closing ports or an error occurs while forwarding ports. Clears all ports currently in this UPnPManager.
+   *
+   * @param message The message to send to the user
+   */
   private void UPnPFinished(String message) {
     portsOpen = false;
     clearPorts();
@@ -169,22 +211,28 @@ public class UPnPManager {
     myUI.setPortOpening(true);
   }
 
+  /**
+   * Gets the current GatewayDevice to use
+   *
+   * @return The GatewayDevice to use
+   * @throws Exception Because laziness, and lots of exceptions thrown by this
+   */
   private GatewayDevice getGateway() throws Exception {
     myUI.updateStatus("Identifying router...");
     GatewayDiscover gatewayDiscover = new GatewayDiscover();
-    println("Looking for Gateway Devices...");
+    System.out.println("Looking for Gateway Devices...");
     Map<InetAddress, GatewayDevice> gateways = gatewayDiscover.discover();
     if (gateways.isEmpty()) {
-      println("No gateways found");
-      println("Stopping weupnp");
+      System.out.println("No gateways found");
+      System.out.println("Stopping weupnp");
       UPnPFinished("No active gateways found!");
       return null;
     }
-    println(gateways.size() + " gateway(s) found\n");
+    System.out.println(gateways.size() + " gateway(s) found\n");
     int counter = 0;
     for (GatewayDevice gw : gateways.values()) {
       counter++;
-      println("Listing gateway details of device #" + counter
+      System.out.println("Listing gateway details of device #" + counter
           + "\n\tFriendly name: " + gw.getFriendlyName()
           + "\n\tPresentation URL: " + gw.getPresentationURL()
           + "\n\tModel name: " + gw.getModelName()
@@ -205,11 +253,11 @@ public class UPnPManager {
     myUI.updateStatus("Checking router compatibility...");
     // testing PortMappingNumberOfEntries
     Integer portMapCount = currentGateway.getPortMappingNumberOfEntries();
-    println("GetPortMappingNumberOfEntries=" + (portMapCount != null ? portMapCount.toString() : "(unsupported)"));
+    System.out.println("GetPortMappingNumberOfEntries=" + (portMapCount != null ? portMapCount.toString() : "(unsupported)"));
     // testing getGenericPortMappingEntry
     PortMappingEntry portMapping0 = new PortMappingEntry();
     if (currentGateway.getGenericPortMappingEntry(0, portMapping0)) {
-      println("Portmapping #0 successfully retrieved (" + portMapping0.getPortMappingDescription() + ":" + portMapping0.getExternalPort() + ")");
+      System.out.println("Portmapping #0 successfully retrieved (" + portMapping0.getPortMappingDescription() + ":" + portMapping0.getExternalPort() + ")");
       myUI.updateStatus("Compatibility check successful");
     } else {
       myUI.updateStatus("Compatibility check failed");
@@ -224,13 +272,13 @@ public class UPnPManager {
    */
   private boolean doOpenPorts(String ipToForwardTo) throws Exception {
     // enableUPnP lease duration mapping
-    println("Sending port mapping request for ports.");
+    System.out.println("Sending port mapping request for ports.");
     myUI.updateStatus("Opening ports...");
     for (Port portToMap : portList) {
       if (portToMap.shouldForwardTPC()) {
         myUI.updateStatus("Opening Port " + portToMap.getPort() + " (TCP)");
         if (!currentGateway.addPortMapping(portToMap.getPort(), portToMap.getPort(), ipToForwardTo, "TCP", "PortForward UPnP TCP")) {
-          println("Error mapping TCP port " + portToMap.getPort());
+          System.out.println("Error mapping TCP port " + portToMap.getPort());
           UPnPFinished("Error mapping TCP port " + portToMap.getPort());
           return false;
         }
@@ -238,20 +286,16 @@ public class UPnPManager {
       if (portToMap.shouldForwardUDP()) {
         myUI.updateStatus("Opening Port " + portToMap.getPort() + " (UDP)");
         if (!currentGateway.addPortMapping(portToMap.getPort(), portToMap.getPort(), ipToForwardTo, "UDP", "PortForward UPnP UDP")) {
-          println("Error mapping UDP port " + portToMap.getPort());
+          System.out.println("Error mapping UDP port " + portToMap.getPort());
           UPnPFinished("Error mapping UDP port " + portToMap.getPort());
           return false;
         }
       }
     }
-    println("Mapping SUCCESSFUL!");
+    System.out.println("Mapping SUCCESSFUL!");
     myUI.updateStatus("Ports are currently open!");
     myUI.setPortClosing(true);
     return true;
-  }
-
-  private void println(String msg) {
-    System.out.println(msg);
   }
 
 }

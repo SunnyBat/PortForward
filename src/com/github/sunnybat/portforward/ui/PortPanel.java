@@ -21,10 +21,20 @@ public class PortPanel extends javax.swing.JPanel {
     ((javax.swing.JSpinner.NumberEditor) JSPortNumber.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
   }
 
+  /**
+   * Checks whether or not this PortPanel's checkboxes are valid
+   *
+   * @return True if they are valid, false if not
+   */
   public boolean checkBoxesValid() {
     return JCBTCP.isSelected() || JCBUDP.isSelected();
   }
 
+  /**
+   * Enables or disabled modification of the current values in this PortPanel.
+   *
+   * @param enable True to enable, false to disable
+   */
   public void setPortOptionsEnabled(boolean enable) {
     JCBTCP.setEnabled(enable);
     JCBUDP.setEnabled(enable);
@@ -32,6 +42,11 @@ public class PortPanel extends javax.swing.JPanel {
     JSPortNumber.setEnabled(enable);
   }
 
+  /**
+   * Gets the Port currently specified in this PortPanel. This will never return null.
+   *
+   * @return The Port specified
+   */
   public Port getPort() {
     return new Port((int) JSPortNumber.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected());
   }
