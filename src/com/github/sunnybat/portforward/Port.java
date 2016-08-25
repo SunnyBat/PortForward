@@ -6,18 +6,24 @@ package com.github.sunnybat.portforward;
  */
 public class Port {
 
-  private final int portNumber;
+  private final int internalPort;
+  private final int externalPort;
   private final boolean forwardTCP;
   private final boolean forwardUDP;
 
-  public Port(int portNumber, boolean forwardTCP, boolean forwardUDP) {
-    this.portNumber = portNumber;
+  public Port(int internalPort, int externalPort, boolean forwardTCP, boolean forwardUDP) {
+    this.internalPort = internalPort;
+    this.externalPort = externalPort;
     this.forwardTCP = forwardTCP;
     this.forwardUDP = forwardUDP;
   }
 
-  public int getPort() {
-    return portNumber;
+  public int getInternalPort() {
+    return internalPort;
+  }
+
+  public int getExternalPort() {
+    return externalPort;
   }
 
   public boolean shouldForwardTPC() {
@@ -30,7 +36,7 @@ public class Port {
 
   @Override
   public String toString() {
-    return "Port = " + portNumber + " | TCP = " + forwardTCP + " | UDP = " + forwardUDP;
+    return "internalPort = " + internalPort + " | externalPort = " + externalPort + " | TCP = " + forwardTCP + " | UDP = " + forwardUDP;
   }
 
 }

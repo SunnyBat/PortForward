@@ -65,14 +65,14 @@ public class PortForward {
       if (myUI.exitRequested()) {
         return;
       } else if (myUI.getAction() == Interactor.ACTION.FORCECLOSE) {
-        if (addPorts(myManager, myUI.getPortsToForward())) {
+        if (!addPorts(myManager, myUI.getPortsToForward())) {
           myUI.updateStatus("Unable to add ports to forward?");
         } else {
           myManager.closePorts();
         }
       } else if (myManager.arePortsOpen()) {
         myManager.closePorts();
-      } else if (addPorts(myManager, myUI.getPortsToForward())) {
+      } else if (!addPorts(myManager, myUI.getPortsToForward())) {
         myUI.updateStatus("Unable to add ports to forward?");
       } else {
         myManager.openPorts(myUI.getIPToForward());
@@ -119,13 +119,15 @@ public class PortForward {
     int startIndex = getArgIndex(args, "-port");
     if (startIndex != -1) {
       int offset = 1;
-      while (startIndex + offset < args.length && !args[startIndex + offset].startsWith("-")) {
+      while (startIndex + offset < args.length && !args[startIndex + offset].startsWith("-")) { // TODO: Fix potential IOOBE
         try {
-          int portNum = Integer.parseInt(args[startIndex + offset]);
-          portsToOpen.add(new Port(portNum, true, true));
-          System.out.println("Added port " + portNum);
+          int iPort = Integer.parseInt(args[startIndex + offset]);
+          int ePort = Integer.parseInt(args[startIndex + offset + 1]);
+          portsToOpen.add(new Port(iPort, ePort, true, true));
+          System.out.println("Added port " + iPort + ":" + ePort);
         } catch (NumberFormatException nfe) {
           System.out.println("Invalid port: " + args[startIndex + offset]);
+          System.out.println("Invalid port: " + args[startIndex + offset + 1]);
         }
         offset++;
       }

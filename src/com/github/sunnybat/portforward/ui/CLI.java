@@ -111,14 +111,16 @@ public class CLI implements Interactor {
         if (isOpen) {
           System.out.println("You cannot add ports while ports are opened!");
         } else {
-          System.out.print("Port number (1-65535)? ");
-          int port = promptForPortNumber();
+          System.out.print("Internal Port number (1-65535)? ");
+          int iPort = promptForPortNumber();
+          System.out.print("Enternal Port number (1-65535)? ");
+          int ePort = promptForPortNumber();
           System.out.print("Forward TCP (Y/N)? ");
           boolean tcp = parseYesNo(in.nextLine(), true);
           System.out.print("Forward UDP (Y/N)? ");
           boolean udp = parseYesNo(in.nextLine(), true);
-          removePort(port);
-          portsToOpen.add(new Port(port, tcp, udp));
+          removePort(iPort);
+          portsToOpen.add(new Port(iPort, ePort, tcp, udp));
         }
         break;
       case "removeport":
@@ -127,9 +129,9 @@ public class CLI implements Interactor {
         } else {
           parseCommand("listports");
           System.out.println();
-          System.out.println("Port number to remove (1-65535)? ");
-          int portNumber = promptForPortNumber();
-          removePort(portNumber);
+          System.out.println("External Port Mapping to remove (1-65535)? ");
+          int ePort = promptForPortNumber();
+          removePort(ePort);
         }
         break;
       case "clearports":
@@ -213,13 +215,13 @@ public class CLI implements Interactor {
   }
 
   /**
-   * Removes the given port number from the current list of ports to open.
+   * Removes the given internal port number from the current list of ports to open.
    *
-   * @param portNum The port number to remove
+   * @param ePort The external port number to remove
    */
-  private void removePort(int portNum) {
+  private void removePort(int ePort) {
     for (Port p : portsToOpen) {
-      if (p.getPort() == portNum) {
+      if (p.getExternalPort() == ePort) {
         portsToOpen.remove(p);
         break;
       }

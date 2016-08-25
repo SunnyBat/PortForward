@@ -18,7 +18,7 @@ public class PortPanel extends javax.swing.JPanel {
   public PortPanel(GUI gui) {
     initComponents();
     myGUI = gui;
-    ((javax.swing.JSpinner.NumberEditor) JSPortNumber.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
+    ((javax.swing.JSpinner.NumberEditor) JSIPort.getEditor()).getTextField().setDisabledTextColor(java.awt.Color.BLACK);
   }
 
   /**
@@ -39,7 +39,7 @@ public class PortPanel extends javax.swing.JPanel {
     JCBTCP.setEnabled(enable);
     JCBUDP.setEnabled(enable);
     JBRemove.setEnabled(enable);
-    JSPortNumber.setEnabled(enable);
+    JSIPort.setEnabled(enable);
   }
 
   /**
@@ -48,7 +48,7 @@ public class PortPanel extends javax.swing.JPanel {
    * @return The Port specified
    */
   public Port getPort() {
-    return new Port((int) JSPortNumber.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected());
+    return new Port((int) JSIPort.getValue(), (int) JSEPort.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected());
   }
 
   /**
@@ -60,16 +60,18 @@ public class PortPanel extends javax.swing.JPanel {
   private void initComponents() {
 
     jLabel2 = new javax.swing.JLabel();
-    JSPortNumber = new javax.swing.JSpinner();
+    JSIPort = new javax.swing.JSpinner();
     JCBTCP = new javax.swing.JCheckBox();
     JCBUDP = new javax.swing.JCheckBox();
     JBRemove = new javax.swing.JButton();
+    jLabel3 = new javax.swing.JLabel();
+    JSEPort = new javax.swing.JSpinner();
 
-    jLabel2.setText("Port to Portforward:");
+    jLabel2.setText("Internal Port");
 
-    JSPortNumber.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
-    JSPortNumber.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    JSPortNumber.setEditor(new javax.swing.JSpinner.NumberEditor(JSPortNumber, "0"));
+    JSIPort.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+    JSIPort.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    JSIPort.setEditor(new javax.swing.JSpinner.NumberEditor(JSIPort, "0"));
 
     JCBTCP.setSelected(true);
     JCBTCP.setText("TCP");
@@ -94,6 +96,12 @@ public class PortPanel extends javax.swing.JPanel {
       }
     });
 
+    jLabel3.setText("External Port");
+
+    JSEPort.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+    JSEPort.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    JSEPort.setEditor(new javax.swing.JSpinner.NumberEditor(JSEPort, "0"));
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
@@ -101,19 +109,26 @@ public class PortPanel extends javax.swing.JPanel {
       .addGroup(layout.createSequentialGroup()
         .addComponent(jLabel2)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(JSPortNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addComponent(JSIPort, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addComponent(jLabel3)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(JSEPort, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
         .addComponent(JCBTCP)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(JCBUDP)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGap(18, 18, 18)
         .addComponent(JBRemove))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        .addComponent(jLabel3)
+        .addComponent(JSEPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+      .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
         .addComponent(jLabel2)
-        .addComponent(JSPortNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addComponent(JSIPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addComponent(JCBTCP)
         .addComponent(JCBUDP)
         .addComponent(JBRemove))
@@ -140,7 +155,9 @@ public class PortPanel extends javax.swing.JPanel {
   private javax.swing.JButton JBRemove;
   public javax.swing.JCheckBox JCBTCP;
   public javax.swing.JCheckBox JCBUDP;
-  public javax.swing.JSpinner JSPortNumber;
+  public javax.swing.JSpinner JSEPort;
+  public javax.swing.JSpinner JSIPort;
   private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
   // End of variables declaration//GEN-END:variables
 }

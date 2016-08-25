@@ -46,7 +46,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     } catch (IOException iOException) {
       iOException.printStackTrace();
     }
-    ((javax.swing.JSpinner.NumberEditor) JSPort.getEditor()).getTextField().setDisabledTextColor(Color.DARK_GRAY);
+    ((javax.swing.JSpinner.NumberEditor) JSIPort.getEditor()).getTextField().setDisabledTextColor(Color.DARK_GRAY);
     JTFIPToForwardTo.setDisabledTextColor(Color.DARK_GRAY);
     MenuItem openWindow = new MenuItem("Restore Window");
     MenuItem closeProgram = new MenuItem("Close Program");
@@ -70,7 +70,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
       @Override
       public void run() {
         try {
-          JSPort.commitEdit(); // Update the spinner value. If invalid, uses the last known valid value (keypresses don't update the last known value)
+          JSIPort.commitEdit(); // Update the spinner value. If invalid, uses the last known valid value (keypresses don't update the last known value)
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -96,7 +96,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
   @Override
   public List<Port> getPortsToForward() {
     List<Port> ports = new ArrayList<>();
-    Port mainPort = new Port((int) JSPort.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected());
+    Port mainPort = new Port((int) JSIPort.getValue(), (int) JSEPort.getValue(), JCBTCP.isSelected(), JCBUDP.isSelected());
     ports.add(mainPort);
     for (PortPanel panel : portPanelList) {
       if (panel.checkBoxesValid()) {
@@ -146,7 +146,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
         JBForceClose.setEnabled(enabled);
         JCBTCP.setEnabled(enabled);
         JCBUDP.setEnabled(enabled);
-        JSPort.setEnabled(enabled);
+        JSIPort.setEnabled(enabled);
         JTFIPToForwardTo.setEnabled(enabled);
         JBAddPort.setEnabled(enabled);
         for (PortPanel panel : portPanelList) {
@@ -166,7 +166,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
         JBForceClose.setEnabled(false);
         JCBTCP.setEnabled(false);
         JCBUDP.setEnabled(false);
-        JSPort.setEnabled(false);
+        JSIPort.setEnabled(false);
         JTFIPToForwardTo.setEnabled(false);
         JBAddPort.setEnabled(false);
         for (PortPanel panel : portPanelList) {
@@ -235,7 +235,7 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
 
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
-    JSPort = new javax.swing.JSpinner();
+    JSIPort = new javax.swing.JSpinner();
     JBAction = new javax.swing.JButton();
     JLPortStatus = new javax.swing.JLabel();
     JCBTCP = new javax.swing.JCheckBox();
@@ -246,6 +246,8 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     JTFIPToForwardTo = new javax.swing.JTextField();
     jLabel4 = new javax.swing.JLabel();
     JBForceClose = new javax.swing.JButton();
+    JSEPort = new javax.swing.JSpinner();
+    jLabel5 = new javax.swing.JLabel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setResizable(false);
@@ -259,10 +261,10 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
     jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
     jLabel1.setText("Portforwarding");
 
-    jLabel2.setText("Port to Portforward:");
+    jLabel2.setText("Internal Port");
 
-    JSPort.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
-    JSPort.setEditor(new javax.swing.JSpinner.NumberEditor(JSPort, "0"));
+    JSIPort.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+    JSIPort.setEditor(new javax.swing.JSpinner.NumberEditor(JSIPort, "0"));
 
     JBAction.setText("GO!");
     JBAction.addActionListener(new java.awt.event.ActionListener() {
@@ -311,6 +313,11 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
       }
     });
 
+    JSEPort.setModel(new javax.swing.SpinnerNumberModel(1, 1, 65535, 1));
+    JSEPort.setEditor(new javax.swing.JSpinner.NumberEditor(JSEPort, "0"));
+
+    jLabel5.setText("External Port");
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -321,25 +328,31 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
           .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addComponent(JLPortStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addComponent(JBAction, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addGroup(layout.createSequentialGroup()
-            .addComponent(jLabel2)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(JSPort, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(JCBTCP)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(JCBUDP)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(JBAddPort, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE))
           .addComponent(JPPortPanels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(JBForceClose, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
-            .addComponent(jLabel3)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(JTFIPToForwardTo, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(jLabel4)
-            .addGap(0, 0, Short.MAX_VALUE))
-          .addComponent(JBForceClose, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+              .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(JTFIPToForwardTo, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel4))
+              .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(JSIPort, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(JSEPort, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(JCBTCP)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(JCBUDP)
+                .addGap(18, 18, 18)
+                .addComponent(JBAddPort)))
+            .addGap(0, 0, Short.MAX_VALUE)))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -350,10 +363,12 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
         .addGap(18, 18, 18)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel2)
-          .addComponent(JSPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(JSIPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(JCBTCP)
           .addComponent(JCBUDP)
-          .addComponent(JBAddPort))
+          .addComponent(JBAddPort)
+          .addComponent(JSEPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(jLabel5))
         .addGap(0, 0, 0)
         .addComponent(JPPortPanels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -412,11 +427,13 @@ public class GUI extends com.github.sunnybat.commoncode.javax.swing.JFrame imple
   private javax.swing.JCheckBox JCBUDP;
   private volatile javax.swing.JLabel JLPortStatus;
   private javax.swing.JPanel JPPortPanels;
-  private volatile javax.swing.JSpinner JSPort;
+  private volatile javax.swing.JSpinner JSEPort;
+  private volatile javax.swing.JSpinner JSIPort;
   private javax.swing.JTextField JTFIPToForwardTo;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
   private javax.swing.JLabel jLabel4;
+  private javax.swing.JLabel jLabel5;
   // End of variables declaration//GEN-END:variables
 }

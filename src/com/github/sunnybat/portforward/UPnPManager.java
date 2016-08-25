@@ -42,13 +42,14 @@ public class UPnPManager {
   /**
    * Adds the given port to this UPnPManager. This will override any conflicting ports already added. This cannot be called while ports are open.
    *
-   * @param port The port number to add
+   * @param iPort The internal port number to add
+   * @param ePort The external port number to add
    * @param TCP Whether or not to forward TCP
    * @param UDP Whether or not to forward UDP
    * @return True if successfully added, false if not
    */
-  public boolean addPort(int port, boolean TCP, boolean UDP) {
-    return addPort(new Port(port, TCP, UDP));
+  public boolean addPort(int iPort, int ePort, boolean TCP, boolean UDP) {
+    return addPort(new Port(iPort, ePort, TCP, UDP));
   }
 
   /**
@@ -61,31 +62,31 @@ public class UPnPManager {
     if (portsOpen) {
       return false;
     }
-    if (!isValidPort(toAdd.getPort())) {
+    if (!isValidPort(toAdd.getInternalPort()) || !isValidPort(toAdd.getExternalPort())) {
       return false;
     }
     if (!toAdd.shouldForwardTPC() && !toAdd.shouldForwardUDP()) {
       return false;
     }
-    removePort(toAdd.getPort());
+    removePort(toAdd.getExternalPort());
     return portList.add(toAdd);
   }
 
   /**
    * Removes the given port number from this UPnPManager. This removes both TCP and UDP forwarding. This cannot be called while ports are open.
    *
-   * @param portNum The port number to remove
+   * @param ePort The external port number to remove
    * @return True if removed, false if not present or unable to remove
    */
-  public boolean removePort(int portNum) {
+  public boolean removePort(int ePort) {
     if (portsOpen) {
       return false;
     }
-    if (!isValidPort(portNum)) {
+    if (!isValidPort(ePort)) {
       return false;
     }
     for (Port p : portList) {
-      if (p.getPort() == portNum) {
+      if (p.getExternalPort() == ePort) {
         portList.remove(p);
         return true;
       }
@@ -164,19 +165,19 @@ public class UPnPManager {
     try {
       for (Port portToMap : portList) {
         if (portToMap.shouldForwardTPC()) {
-          if (!currentGateway.deletePortMapping(portToMap.getPort(), "TCP")) {
-            System.out.println("Unable to remove port " + portToMap.getPort() + " (TCP)");
+          if (!currentGateway.deletePortMapping(portToMap.getExternalPort(), "TCP")) {
+            System.out.println("Unable to remove port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort() + " (TCP)");
             allRemoved = false;
           } else {
-            System.out.println("Removed port " + portToMap.getPort() + " (TCP)");
+            System.out.println("Removed port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort() + " (TCP)");
           }
         }
         if (portToMap.shouldForwardUDP()) {
-          if (!currentGateway.deletePortMapping(portToMap.getPort(), "UDP")) {
-            System.out.println("Unable to remove port " + portToMap.getPort() + " (UDP)");
+          if (!currentGateway.deletePortMapping(portToMap.getExternalPort(), "UDP")) {
+            System.out.println("Unable to remove port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort() + " (UDP)");
             allRemoved = false;
           } else {
-            System.out.println("Removed port " + portToMap.getPort() + " (UDP)");
+            System.out.println("Removed port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort() + " (UDP)");
           }
         }
       }
@@ -276,18 +277,18 @@ public class UPnPManager {
     myUI.updateStatus("Opening ports...");
     for (Port portToMap : portList) {
       if (portToMap.shouldForwardTPC()) {
-        myUI.updateStatus("Opening Port " + portToMap.getPort() + " (TCP)");
-        if (!currentGateway.addPortMapping(portToMap.getPort(), portToMap.getPort(), ipToForwardTo, "TCP", "PortForward UPnP TCP")) {
-          System.out.println("Error mapping TCP port " + portToMap.getPort());
-          UPnPFinished("Error mapping TCP port " + portToMap.getPort());
+        myUI.updateStatus("Opening Port " + portToMap.getInternalPort() + " (TCP)");
+        if (!currentGateway.addPortMapping(portToMap.getExternalPort(), portToMap.getInternalPort(), ipToForwardTo, "TCP", "PortForward UPnP TCP")) {
+          System.out.println("Error mapping TCP port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort());
+          UPnPFinished("Error mapping TCP port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort());
           return false;
         }
       }
       if (portToMap.shouldForwardUDP()) {
-        myUI.updateStatus("Opening Port " + portToMap.getPort() + " (UDP)");
-        if (!currentGateway.addPortMapping(portToMap.getPort(), portToMap.getPort(), ipToForwardTo, "UDP", "PortForward UPnP UDP")) {
-          System.out.println("Error mapping UDP port " + portToMap.getPort());
-          UPnPFinished("Error mapping UDP port " + portToMap.getPort());
+        myUI.updateStatus("Opening Port " + portToMap.getInternalPort() + " (UDP)");
+        if (!currentGateway.addPortMapping(portToMap.getExternalPort(), portToMap.getInternalPort(), ipToForwardTo, "UDP", "PortForward UPnP UDP")) {
+          System.out.println("Error mapping UDP port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort());
+          UPnPFinished("Error mapping UDP port " + portToMap.getInternalPort() + ":" + portToMap.getExternalPort());
           return false;
         }
       }
