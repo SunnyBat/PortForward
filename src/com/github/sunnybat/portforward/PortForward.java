@@ -17,17 +17,19 @@ public class PortForward {
 
   private static Interactor myUI;
   private static UPnPManager myManager;
+  private static final String CLI_FLAG = "-cli";
+  private static final String PORT_FLAG = "-port";
 
   /**
    * @param args the command line arguments
    */
   public static void main(String[] args) {
-    String initialIP = IPAddress.getInternalIP();
-    if (containsArg(args, "-cli")) {
-      myUI = new CLI(initialIP);
+    String internalIP = IPAddress.getInternalIP();
+    if (containsArg(args, CLI_FLAG)) {
+      myUI = new CLI(internalIP);
     } else {
       Thread.setDefaultUncaughtExceptionHandler(new GUIExceptionHandler());
-      myUI = new GUI(initialIP);
+      myUI = new GUI(internalIP);
     }
     myManager = new UPnPManager(myUI);
 
@@ -44,40 +46,10 @@ public class PortForward {
 
     // Auto-open ports if necessary
     List<Port> portsToOpen = parsePorts(args);
-    if (!portsToOpen.isEmpty()) {
-      try {
-        myUI.setPortClosing(false);
-        for (Port p : portsToOpen) {
-          myManager.addPort(p);
-        }
-        myManager.closePorts();
-        for (Port p : portsToOpen) {
-          myManager.addPort(p);
-        }
-        myManager.openPorts(initialIP);
-      } catch (IllegalStateException ise) {
-      }
-    }
+    autoOpenPorts(internalIP, portsToOpen);
 
     // Main program loop
-    while (!myUI.exitRequested()) {
-      myUI.waitForAction();
-      if (myUI.exitRequested()) {
-        return;
-      } else if (myUI.getAction() == Interactor.ACTION.FORCECLOSE) {
-        if (!addPorts(myManager, myUI.getPortsToForward())) {
-          myUI.updateStatus("Unable to add ports to forward?");
-        } else {
-          myManager.closePorts();
-        }
-      } else if (myManager.arePortsOpen()) {
-        myManager.closePorts();
-      } else if (!addPorts(myManager, myUI.getPortsToForward())) {
-        myUI.updateStatus("Unable to add ports to forward?");
-      } else {
-        myManager.openPorts(myUI.getIPToForward());
-      }
-    }
+    mainLoop();
   }
 
   /**
@@ -116,20 +88,22 @@ public class PortForward {
    */
   private static List<Port> parsePorts(String[] args) {
     List<Port> portsToOpen = new ArrayList<>();
-    int startIndex = getArgIndex(args, "-port");
+    int startIndex = getArgIndex(args, PORT_FLAG);
     if (startIndex != -1) {
       int offset = 1;
-      while (startIndex + offset < args.length && !args[startIndex + offset].startsWith("-")) { // TODO: Fix potential IOOBE
+      while (startIndex + offset + 1 < args.length && !args[startIndex + offset].startsWith("-")) {
         try {
           int iPort = Integer.parseInt(args[startIndex + offset]);
           int ePort = Integer.parseInt(args[startIndex + offset + 1]);
           portsToOpen.add(new Port(iPort, ePort, true, true));
           System.out.println("Added port " + iPort + ":" + ePort);
         } catch (NumberFormatException nfe) {
-          System.out.println("Invalid port: " + args[startIndex + offset]);
-          System.out.println("Invalid port: " + args[startIndex + offset + 1]);
+          System.err.println("Invalid port: " + args[startIndex + offset]);
+          System.err.println("Invalid port: " + args[startIndex + offset + 1]);
+        } catch (IllegalArgumentException iae) {
+          System.err.println(iae.getLocalizedMessage());
         }
-        offset++;
+        offset += 2;
       }
     }
     return portsToOpen;
@@ -149,5 +123,52 @@ public class PortForward {
       }
     }
     return true;
+  }
+
+  /**
+   * Automatically opens the specified ports to the given IP.
+   *
+   * @param forwardToIP The IP to open the ports to
+   * @param portsToOpen The List of Ports to open
+   */
+  private static void autoOpenPorts(String forwardToIP, List<Port> portsToOpen) {
+    if (!portsToOpen.isEmpty()) {
+      try {
+        myUI.setPortClosing(false);
+        for (Port p : portsToOpen) {
+          myManager.addPort(p);
+        }
+        myManager.closePorts();
+        for (Port p : portsToOpen) {
+          myManager.addPort(p);
+        }
+        myManager.openPorts(forwardToIP);
+      } catch (IllegalStateException ise) {
+      }
+    }
+  }
+
+  /**
+   * The main loop of the program.
+   */
+  private static void mainLoop() {
+    while (!myUI.exitRequested()) {
+      myUI.waitForAction();
+      if (myUI.exitRequested()) {
+        return;
+      } else if (myUI.getAction() == Interactor.ACTION.FORCECLOSE) {
+        if (!addPorts(myManager, myUI.getPortsToForward())) {
+          myUI.updateStatus("Unable to add ports to forward?");
+        } else {
+          myManager.closePorts();
+        }
+      } else if (myManager.arePortsOpen()) {
+        myManager.closePorts();
+      } else if (!addPorts(myManager, myUI.getPortsToForward())) {
+        myUI.updateStatus("Unable to add ports to forward?");
+      } else {
+        myManager.openPorts(myUI.getIPToForward());
+      }
+    }
   }
 }

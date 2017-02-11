@@ -1,0 +1,8 @@
+A simple UPnP portforwarding program written in Java.
+==========
+
+Libraries used:
+
+- weupnp 0.1.2
+
+- CommonCode (https://www.github.com/SunnyBat/CommonCode)
